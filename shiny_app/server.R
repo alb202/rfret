@@ -4,7 +4,7 @@ library(shinyjs)
 library(gridExtra)
 source("../R/inspect_raw_data.R")
 
-function(input, output) {
+function(input, output, session) {
     values <- reactiveValues()
     input_files <- reactive({
         if (is.null(input$data_file)) return(NULL)
@@ -18,6 +18,12 @@ function(input, output) {
             df <- list(input$data_file$name[i], df)
             objectsLoaded[[length(objectsLoaded)+1]] <- df
         }
+        print(input$data_file$datapath)
+        print(input$data_file$name)
+        print(input$sep)
+        print(input$quote)
+        print(input$header)
+        print(input$skip_rows)
         values$file_index <- 1
         values$number_of_files <- length(objectsLoaded)
         values$dataset_decisions <- rep(NA, length(objectsLoaded))
@@ -30,20 +36,35 @@ function(input, output) {
         if (is.null(df)) return(NULL)
         return(df)
     })
-
-    #values$number_of_files <- length(myData())
-    output$filename <-renderText({
+    output$filename <- renderText({
         if(is.null(input$data_file)) return(NULL)
         paste(values$file_index, "    ", {myData()[[values$file_index]][[1]]})
     })
+    # output$decision_image <- renderImage({
+    #     if(is.null(input$data_file)) return(NULL)
+    #     if(values$dataset_decision[[values$file_index]] == TRUE){
+    #         decision_image <- list(src = "accept.png",
+    #              contentType = 'image/png',
+    #              width = 40,
+    #              height = 30,
+    #              alt = "This file was accepted")
+    #     } else if(values$dataset_decision[[values$file_index]] == FALSE){
+    #         decision_image <- list(src = "remove.png",
+    #              contentType = 'image/png',
+    #              width = 40,
+    #              height = 30,
+    #              alt = "This file was removed")
+    #     } else return(NULL)
+    #     return(decision_image)
+    # })
+
     output$raw_output <- renderPlot({
-        if(is.null(input$data_file)) return(print("Please upload some FRET data"))
+        if(is.null(input$data_file)) return(NULL)
         df <- data.frame(myData()[[values$file_index]][[2]])
         raw_data_plots <- inspect_raw_data(df)
         raw_data_grid <- grid.arrange(raw_data_plots$donor, raw_data_plots$acceptor, raw_data_plots$fret, ncol=2, nrow=3)
     })
     observeEvent(input$accept, label = "Accept", {
-        cat("accept ", values$file_index, "\n")
         values$dataset_decisions[[values$file_index]] <- TRUE
         if(values$file_index < values$number_of_files) values$file_index <- values$file_index + 1
         View(values$dataset_decisions)
@@ -63,16 +84,29 @@ function(input, output) {
         values$dataset_decisions[1:values$number_of_files] <- TRUE
         View(values$dataset_decisions)
     })
-
-    listener <- reactive({
-        list(input$next1, input$previous, input$accept, input$remove, input$accept_all, input$accept_all_subsequent, input$data_file)
-    })
-
     observeEvent(input$accept_all_subsequent, label = "Accept All Subsequent", {
         values$dataset_decisions[values$file_index:values$number_of_files] <- TRUE
         View(values$dataset_decisions)
     })
-    observeEvent(listener(), {
+    output$processed_output <- renderPlot({
+        #if(is.null(input$data_file)) return(NULL)
+        #if(!is.null(input$input$process_all)) return(NULL)
+        #if(is.true(processed_listener())){
+        observeEvent(input$process_all, label = "Process the selected files")
+        #input$process_all
+        isolate({
+            print("processing")
+            updateTabsetPanel(session, "main", selected = "Batch processing")
+        })
+    })
+
+    prelim_listener <- reactive({
+        list(input$next1, input$previous, input$accept, input$remove, input$accept_all, input$accept_all_subsequent, input$data_file)
+    })
+
+    #processed_listener <- eventReactive(input$process_all, {TRUE})
+
+    observeEvent(prelim_listener(), {
         hideElement("process_all")
         if (is.null(input$data_file)){
             hideElement("process_all")

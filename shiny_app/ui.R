@@ -28,7 +28,7 @@ fluidPage(
                                         'Single Quote'="'"),
                                       '"'),
                          checkboxInput('view_quality_filter',
-                                       'Do you want to view the quality filter plots?', TRUE)
+                                       'Do you want to skip the pre-processing filter?', FALSE)
                 ),
                 tabPanel("Advanced Options",
                          checkboxInput('option1', 'Option1', value = FALSE) ,
@@ -45,16 +45,27 @@ fluidPage(
                 )
             )
         ),
-        mainPanel("",
-                  h1(textOutput("filename")),
-                  plotOutput("raw_output"),
-                  actionButton("accept", "Accept"),
-                  actionButton("remove", "Remove"),
-                  actionButton("previous", "Previous"),
-                  actionButton("next1", "Next"),
-                  actionButton("accept_all", "Accept All"),
-                  actionButton("accept_all_subsequent", "Accept all subsequent"),
-                  actionButton("process_all", "Process the selected files ...")
+        mainPanel(
+                  tabsetPanel("main",
+                      tabPanel("Pre-processing",
+                          #imageOutput("decision_image"),
+                          h1(textOutput("filename")),
+                          plotOutput("raw_output"),
+                          actionButton("accept", "Accept"),
+                          actionButton("remove", "Remove"),
+                          actionButton("previous", "Previous"),
+                          actionButton("next1", "Next"),
+                          actionButton("accept_all", "Accept All"),
+                          actionButton("accept_all_subsequent", "Accept all subsequent"),
+                          actionButton("process_all", "Process the selected files")
+                      ),
+                      tabPanel("Batch processing",
+                               h1(textOutput("Batch Analysis")),
+                               plotOutput("processed_output"),
+                               #tableOutput("table_output"),
+                               downloadButton("plot_download")
+                               )
+                  )
         )
     )
 )
