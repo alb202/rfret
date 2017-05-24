@@ -48,7 +48,8 @@ fluidPage(
                   h1(textOutput("filename")),
                   plotOutput("raw_output"),
                   actionButton("accept", "Accept"),
-                  actionButton("remove", "Remove")
+                  actionButton("remove", "Remove"),
+                  actionButton("accept_all", "Accept All")
         )
     )
 )

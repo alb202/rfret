@@ -4,7 +4,11 @@ library(gridExtra)
 source("/media/ab/HD4/rfret/R/inspect_raw_data.R")
 
 function(input, output) {
-    infile <- reactive({
+    #file_index = 1
+    values <- reactiveValues()
+    values$file_index <- 1
+    values$dataset_decisions <- list()
+    input_files <- reactive({
         if (is.null(input$data_file)) {
             # User has not uploaded a file yet
             return(NULL)
@@ -16,23 +20,43 @@ function(input, output) {
                            sep=input$sep,
                            quote=input$quote,
                            skip = input$skip_rows)
-            df <- list(input$data_file$name, df)
+            df <- list(input$data_file$name[i], df)
             objectsLoaded[[length(objectsLoaded)+1]] <- df
         }
         return(objectsLoaded)
     })
 
     myData <- reactive({
-        df<-infile()
+        df<-input_files()
         if (is.null(df)) return(NULL)
         return(df)
     })
-    output$filename <-renderText({myData()[[1]][[1]]})
+    #values$number_of_files <- length(myData())
+    output$filename <-renderText({myData()[[values$file_index]][[1]]})
     output$raw_output <- renderPlot({
+        values$number_of_files <- length(myData())
         if(is.null(input$data_file)) return(print("Please upload some FRET data"))
-        df <- data.frame(myData()[[1]][[2]])
+        df <- data.frame(myData()[[values$file_index]][[2]])
         raw_data_plots <- inspect_raw_data(df)
         raw_data_grid <- grid.arrange(raw_data_plots$donor, raw_data_plots$acceptor, raw_data_plots$fret, ncol=2, nrow=3)
+    })
+    observeEvent(input$accept, label = "Accept", {
+        cat("accept ", values$file_index, "\n")
+        values$dataset_decisions[[length(values$dataset_decisions) + 1]] <- TRUE
+        values$file_index <- values$file_index + 1
+        View(values$dataset_decisions)
+    })
+    observeEvent(input$remove, label = "Remove", {
+        cat("remove ", values$file_index, "\n")
+        values$dataset_decisions[[length(values$dataset_decisions) + 1]] <- FALSE
+        values$file_index <- values$file_index + 1
+        View(values$dataset_decisions)
+    })
+    observeEvent(input$accept_all, label = "Accept All", {
+        cat("Accept All", values$file_index, "\n")
+        values$dataset_decisions[values$file_index:values$number_of_files] <- TRUE
+        values$file_index <- values$number_of_files
+        View(values$dataset_decisions)
     })
 }
 
