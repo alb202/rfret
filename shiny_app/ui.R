@@ -1,6 +1,8 @@
 library(shiny)
+library(shinyjs)
 
 fluidPage(
+    shinyjs::useShinyjs(),
     titlePanel("RFret"),
     sidebarLayout(
         sidebarPanel(
@@ -44,12 +46,15 @@ fluidPage(
             )
         ),
         mainPanel("",
-                  #h1(textOutput("value1")),
                   h1(textOutput("filename")),
                   plotOutput("raw_output"),
                   actionButton("accept", "Accept"),
                   actionButton("remove", "Remove"),
-                  actionButton("accept_all", "Accept All")
+                  actionButton("previous", "Previous"),
+                  actionButton("next1", "Next"),
+                  actionButton("accept_all", "Accept All"),
+                  actionButton("accept_all_subsequent", "Accept all subsequent"),
+                  actionButton("process_all", "Process the selected files ...")
         )
     )
 )
