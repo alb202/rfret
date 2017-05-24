@@ -88,23 +88,22 @@ function(input, output, session) {
         values$dataset_decisions[values$file_index:values$number_of_files] <- TRUE
         View(values$dataset_decisions)
     })
-    output$processed_output <- renderPlot({
-        #if(is.null(input$data_file)) return(NULL)
-        #if(!is.null(input$input$process_all)) return(NULL)
-        #if(is.true(processed_listener())){
-        observeEvent(input$process_all, label = "Process the selected files")
-        #input$process_all
-        isolate({
-            print("processing")
-            updateTabsetPanel(session, "main", selected = "Batch processing")
-        })
+
+    observeEvent(input$process_all, {
+        print("processing")
+        updateTabsetPanel(session, "main", selected = "Batch processing")
+        #output$processed_output <- renderPlot({ Enter batch function here })
+        print(input$data_file$datapath[values$dataset_decisions])
+        print(input$data_file$name[values$dataset_decisions])
+        print(input$sep)
+        print(input$quote)
+        print(input$header)
+        print(input$skip_rows)
     })
 
     prelim_listener <- reactive({
         list(input$next1, input$previous, input$accept, input$remove, input$accept_all, input$accept_all_subsequent, input$data_file)
     })
-
-    #processed_listener <- eventReactive(input$process_all, {TRUE})
 
     observeEvent(prelim_listener(), {
         hideElement("process_all")

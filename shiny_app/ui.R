@@ -28,7 +28,7 @@ fluidPage(
                                         'Single Quote'="'"),
                                       '"'),
                          checkboxInput('view_quality_filter',
-                                       'Do you want to skip the pre-processing filter?', FALSE)
+                                       'Do you want to skip inspection of raw data?', FALSE)
                 ),
                 tabPanel("Advanced Options",
                          checkboxInput('option1', 'Option1', value = FALSE) ,
