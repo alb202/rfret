@@ -31,7 +31,10 @@ function(input, output) {
         if (is.null(df)) return(NULL)
         return(df)
     })
+<<<<<<< HEAD
     #values$number_of_files <- length(myData())
+=======
+>>>>>>> 39011c707583c8b14a60d0c85fd03ca93b2fe268
     output$filename <-renderText({myData()[[values$file_index]][[1]]})
     output$raw_output <- renderPlot({
         values$number_of_files <- length(myData())
@@ -40,6 +43,7 @@ function(input, output) {
         raw_data_plots <- inspect_raw_data(df)
         raw_data_grid <- grid.arrange(raw_data_plots$donor, raw_data_plots$acceptor, raw_data_plots$fret, ncol=2, nrow=3)
     })
+<<<<<<< HEAD
     observeEvent(input$accept, label = "Accept", {
         cat("accept ", values$file_index, "\n")
         values$dataset_decisions[[length(values$dataset_decisions) + 1]] <- TRUE
@@ -56,6 +60,19 @@ function(input, output) {
         cat("Accept All", values$file_index, "\n")
         values$dataset_decisions[values$file_index:values$number_of_files] <- TRUE
         values$file_index <- values$number_of_files
+=======
+    file_index <- observeEvent(input$accept, label = "Accept", {
+        values$file_index <- values$file_index + 1
+        cat("accept ", values$file_index, "\n")
+        values$dataset_decisions[[length(values$dataset_decisions) + 1]] <- TRUE
+        View(values$dataset_decisions)
+    })
+
+    file_index <- observeEvent(input$remove, label = "Remove", {
+        values$file_index <- values$file_index + 1
+        cat("remove ", values$file_index, "\n")
+        values$dataset_decisions[[length(values$dataset_decisions) + 1]] <- FALSE
+>>>>>>> 39011c707583c8b14a60d0c85fd03ca93b2fe268
         View(values$dataset_decisions)
     })
 }
