@@ -11,19 +11,13 @@ function(input, output, session) {
         objectsLoaded <- list()
         for(i in 1:length(input$data_file$name)){
             df <- read.csv(input$data_file[i, 'datapath'],
-                           header=input$header,
+                           header=TRUE,
                            sep=input$sep,
                            quote=input$quote,
                            skip = input$skip_rows)
             df <- list(input$data_file$name[i], df)
             objectsLoaded[[length(objectsLoaded)+1]] <- df
         }
-        print(input$data_file$datapath)
-        print(input$data_file$name)
-        print(input$sep)
-        print(input$quote)
-        print(input$header)
-        print(input$skip_rows)
         values$file_index <- 1
         values$number_of_files <- length(objectsLoaded)
         values$dataset_decisions <- rep(NA, length(objectsLoaded))
@@ -38,38 +32,21 @@ function(input, output, session) {
     })
     output$filename <- renderText({
         if(is.null(input$data_file)) return(NULL)
-        paste(values$file_index, "    ", {myData()[[values$file_index]][[1]]})
+        paste(values$file_index, "-    ", {myData()[[values$file_index]][[1]]})
     })
-    # output$decision_image <- renderImage({
-    #     if(is.null(input$data_file)) return(NULL)
-    #     if(values$dataset_decision[[values$file_index]] == TRUE){
-    #         decision_image <- list(src = "accept.png",
-    #              contentType = 'image/png',
-    #              width = 40,
-    #              height = 30,
-    #              alt = "This file was accepted")
-    #     } else if(values$dataset_decision[[values$file_index]] == FALSE){
-    #         decision_image <- list(src = "remove.png",
-    #              contentType = 'image/png',
-    #              width = 40,
-    #              height = 30,
-    #              alt = "This file was removed")
-    #     } else return(NULL)
-    #     return(decision_image)
-    # })
 
-    output$raw_output <- renderPlot({
+    output$raw_output <- renderPlot(width = 750, height = 350, {
         if(is.null(input$data_file)) return(NULL)
         df <- data.frame(myData()[[values$file_index]][[2]])
         raw_data_plots <- inspect_raw_data(df)
-        raw_data_grid <- grid.arrange(raw_data_plots$donor, raw_data_plots$acceptor, raw_data_plots$fret, ncol=2, nrow=3)
+        raw_data_grid <- grid.arrange(raw_data_plots$donor, raw_data_plots$acceptor, raw_data_plots$fret, ncol=2, nrow=2)
     })
     observeEvent(input$accept, label = "Accept", {
         values$dataset_decisions[[values$file_index]] <- TRUE
         if(values$file_index < values$number_of_files) values$file_index <- values$file_index + 1
         View(values$dataset_decisions)
     })
-    observeEvent(input$remove, label = "Remove", {
+    observeEvent(input$reject, label = "Reject", {
         values$dataset_decisions[[values$file_index]] <- FALSE
         if(values$file_index < values$number_of_files) values$file_index <- values$file_index + 1
         View(values$dataset_decisions)
@@ -93,16 +70,16 @@ function(input, output, session) {
         print("processing")
         updateTabsetPanel(session, "main", selected = "Batch processing")
         #output$processed_output <- renderPlot({ Enter batch function here })
-        print(input$data_file$datapath[values$dataset_decisions])
-        print(input$data_file$name[values$dataset_decisions])
+        print(list(input$data_file$datapath[values$dataset_decisions]))
+        print(list(input$data_file$name[values$dataset_decisions]))
         print(input$sep)
         print(input$quote)
-        print(input$header)
+        print(TRUE)
         print(input$skip_rows)
     })
 
     prelim_listener <- reactive({
-        list(input$next1, input$previous, input$accept, input$remove, input$accept_all, input$accept_all_subsequent, input$data_file)
+        list(input$next1, input$previous, input$accept, input$reject, input$accept_all, input$accept_all_subsequent, input$data_file)
     })
 
     observeEvent(prelim_listener(), {
@@ -112,13 +89,13 @@ function(input, output, session) {
             hideElement("next1")
             hideElement("previous")
             hideElement("accept")
-            hideElement("remove")
+            hideElement("reject")
             hideElement("accept_all_subsequent")
             hideElement("accept_all")
             return(NULL)
         } else {
             showElement("accept")
-            showElement("remove")
+            showElement("reject")
             showElement("accept_all_subsequent")
             showElement("accept_all")
 
@@ -137,6 +114,17 @@ function(input, output, session) {
             } else{
                 hideElement("process_all")
             }
-        }
-    })
-}
+            if(!is.na(values$dataset_decisions[[values$file_index]])){
+                if(values$dataset_decisions[[values$file_index]] == TRUE){
+                    output$decision_image <- renderImage({list(src = "accept.png",
+                        width = 50, height = 50, contentType = 'image/png',alt = "Accept")},
+                            deleteFile = FALSE)}
+                if(values$dataset_decisions[[values$file_index]] == FALSE){
+                    output$decision_image <- renderImage({list(src = "reject.png",
+                        width = 50, height = 50, contentType = 'image/png',alt = "Reject")},
+                            deleteFile = FALSE)}
+            }
+        }}
+    )}
+
+## Accept and reject icons are from: http://www.iconsdb.com/green-icons/checked-checkbox-icon.html, http://www.iconsdb.com/red-icons/x-mark-4-icon.html
