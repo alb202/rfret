@@ -1,7 +1,7 @@
 library(shiny)
 library(shinyjs)
 
-fluidPage(
+ui <- fluidPage(
     shinyjs::useShinyjs(),
     titlePanel("RFret", windowTitle = "RFret - Rapid FRET Analysis in R"),
     sidebarLayout(
@@ -70,7 +70,7 @@ fluidPage(
                                          actionButton(inputId = "accept_all_subsequent", label ="Accept all subsequent"),
                                          actionButton(inputId = "process_all", label ="Process the selected files"))
                                  )),
-                        tabPanel("Full analysis",
+                        tabPanel(title = "Full analysis", value = "full_analysis",
                                  wellPanel(style = "background-color: #ffffff;",
                                            h1(textOutput("Batch Analysis")),
                                            plotOutput("processed_output"),

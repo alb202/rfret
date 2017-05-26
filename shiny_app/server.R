@@ -2,9 +2,16 @@
 library(ggplot2)
 library(shinyjs)
 library(gridExtra)
+library(magrittr)
 source("../R/inspect_raw_data.R")
+source("../R/create_master_file.R")
+source("../R/average_technical_replicates.R")
+source("../R/correct_fret_signal.R")
+source("../R/fit_binding_model.R")
+source("../R/make_figure.R")
+source("graphics.R")
 
-function(input, output, session) {
+server <- function(input, output, session) {
     values <- reactiveValues()
     input_files <- reactive({
         if (is.null(input$data_file)) return(NULL)
@@ -80,7 +87,7 @@ function(input, output, session) {
 
     observeEvent(input$process_all, {
         print("processing")
-        updateTabsetPanel(session, "main", selected = "Batch processing")
+        updateTabsetPanel(session = session,inputId = "main", selected = "full_analysis")
         #output$processed_output <- renderPlot({ Enter batch function here })
         print(list(input$data_file$datapath[values$dataset_decisions]))
         print(list(input$data_file$name[values$dataset_decisions]))
@@ -88,6 +95,13 @@ function(input, output, session) {
         print(input$quote)
         print(TRUE)
         print(input$skip_rows)
+        master_file <- makeMasterFile(input$data_file$datapath[values$dataset_decisions],
+                       input$data_file$name[values$dataset_decisions],
+                       input$sep,
+                       input$quote,
+                       TRUE,
+                       input$skip_rows)
+        print(master_file)
     })
 
     prelim_listener <- reactive({
@@ -117,5 +131,6 @@ function(input, output, session) {
             } else hideElement(id = "decision_image")
         }
     })
+    #shinyApp(ui, server)
 }
 ## Accept and reject icons are from: http://www.iconsdb.com/green-icons/checked-checkbox-icon.html, http://www.iconsdb.com/red-icons/x-mark-4-icon.html
