@@ -26,6 +26,9 @@ function(input, output, session) {
 
     myData <- reactive({
         df<-input_files()
+        hideElement("splash_screen")
+        showElement("raw_output")
+        showElement("accept")
         values$number_of_files <- length(df)
         if (is.null(df)) return(NULL)
         return(df)
@@ -37,10 +40,19 @@ function(input, output, session) {
 
     output$raw_output <- renderPlot(width = 750, height = 350, {
         if(is.null(input$data_file)) return(NULL)
+        showElement("accept")
         df <- data.frame(myData()[[values$file_index]][[2]])
         raw_data_plots <- inspect_raw_data(df)
         raw_data_grid <- grid.arrange(raw_data_plots$donor, raw_data_plots$acceptor, raw_data_plots$fret, ncol=2, nrow=2)
     })
+
+    output$splash_screen <- renderPlot(once=TRUE, {
+        if(is.null(input$data_file)){
+            hideElement("raw_output")
+            return(splash_screen())
+        } else return(NULL)
+    })
+
     observeEvent(input$accept, label = "Accept", {
         values$dataset_decisions[[values$file_index]] <- TRUE
         if(values$file_index < values$number_of_files) values$file_index <- values$file_index + 1
@@ -83,48 +95,27 @@ function(input, output, session) {
     })
 
     observeEvent(prelim_listener(), {
-        hideElement("process_all")
-        if (is.null(input$data_file)){
-            hideElement("process_all")
-            hideElement("next1")
-            hideElement("previous")
-            hideElement("accept")
-            hideElement("reject")
-            hideElement("accept_all_subsequent")
-            hideElement("accept_all")
-            return(NULL)
-        } else {
-            showElement("accept")
-            showElement("reject")
-            showElement("accept_all_subsequent")
-            showElement("accept_all")
-
-            if (values$file_index >= values$number_of_files){
-                hideElement("next1")
-            } else {
-                showElement("next1")
-            }
-            if (values$file_index == 1){
-                hideElement("previous")
-            } else {
-                showElement("previous")
-            }
-            if (sum(is.na(values$dataset_decisions)) == 0){
-                showElement("process_all")
-            } else{
-                hideElement("process_all")
-            }
+        if(!is.null(values$dataset_decisions)){
+            toggleElement(id = "process_all", condition = (sum(is.na(values$dataset_decisions)) == 0))
+            toggleElement(id = "next1", condition = ((!is.null(input$data_file)) && values$file_index < values$number_of_files))
+            toggleElement(id = "previous", condition = ((!is.null(input$data_file)) && values$file_index > 1))
+            toggleElement(id = "accept", condition = (!is.null(input$data_file)))
+            toggleElement(id = "reject", condition = (!is.null(input$data_file)))
+            toggleElement(id = "accept_all_subsequent", condition = (!is.null(input$data_file)))
+            toggleElement(id = "accept_all", condition = (!is.null(input$data_file)))
             if(!is.na(values$dataset_decisions[[values$file_index]])){
                 if(values$dataset_decisions[[values$file_index]] == TRUE){
                     output$decision_image <- renderImage({list(src = "accept.png",
-                        width = 50, height = 50, contentType = 'image/png',alt = "Accept")},
-                            deleteFile = FALSE)}
+                                                               width = 50, height = 50, contentType = 'image/png',alt = "Accept")},
+                                                         deleteFile = FALSE)
+                    showElement(id = "decision_image")}
                 if(values$dataset_decisions[[values$file_index]] == FALSE){
                     output$decision_image <- renderImage({list(src = "reject.png",
-                        width = 50, height = 50, contentType = 'image/png',alt = "Reject")},
-                            deleteFile = FALSE)}
-            }
-        }}
-    )}
-
+                                                               width = 50, height = 50, contentType = 'image/png',alt = "Reject")},
+                                                         deleteFile = FALSE)
+                    showElement(id = "decision_image")}
+            } else hideElement(id = "decision_image")
+        }
+    })
+}
 ## Accept and reject icons are from: http://www.iconsdb.com/green-icons/checked-checkbox-icon.html, http://www.iconsdb.com/red-icons/x-mark-4-icon.html

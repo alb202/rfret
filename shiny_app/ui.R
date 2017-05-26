@@ -3,7 +3,7 @@ library(shinyjs)
 
 fluidPage(
     shinyjs::useShinyjs(),
-    titlePanel("RFret"),
+    titlePanel("RFret", windowTitle = "RFret - Rapid FRET Analysis in R"),
     sidebarLayout(
         sidebarPanel(
             tabsetPanel(
@@ -53,27 +53,30 @@ fluidPage(
         mainPanel(
             tabsetPanel("main",
                         tabPanel("Pre-processing",
-                                 wellPanel(
+                                 wellPanel(style = "background-color: #ffffff;",
                                      fluidRow(
                                          column(10, h2(textOutput("filename", inline = TRUE))),
-                                            column(2, imageOutput("decision_image", width = 40, height = 40))
+                                         column(2, imageOutput("decision_image", width = 40, height = 40))
                                      ),
-                                 plotOutput("raw_output"),
-                                 actionButton("accept", "Accept"),
-                                 actionButton("reject", "Reject"),
-                                 actionButton("previous", "Previous"),
-                                 actionButton("next1", "Next"),
-                                 actionButton("accept_all", "Accept All"),
-                                 actionButton("accept_all_subsequent", "Accept all subsequent"),
-                                 actionButton("process_all", "Process the selected files")
-                        )),
+
+                                     plotOutput("splash_screen"),
+                                     plotOutput(outputId = "raw_output"),
+                                     hidden(
+                                         actionButton(inputId = "accept", label ="Accept"),
+                                         actionButton(inputId = "reject", label ="Reject"),
+                                         actionButton(inputId = "previous", label ="Previous"),
+                                         actionButton(inputId = "next1", label ="Next"),
+                                         actionButton(inputId = "accept_all", label ="Accept All"),
+                                         actionButton(inputId = "accept_all_subsequent", label ="Accept all subsequent"),
+                                         actionButton(inputId = "process_all", label ="Process the selected files"))
+                                 )),
                         tabPanel("Full analysis",
-                            wellPanel(
-                                 h1(textOutput("Batch Analysis")),
-                                 plotOutput("processed_output"),
-                                 #tableOutput("table_output"),
-                                 downloadButton("plot_download")
-                        ))
+                                 wellPanel(style = "background-color: #ffffff;",
+                                           h1(textOutput("Batch Analysis")),
+                                           plotOutput("processed_output"),
+                                           #tableOutput("table_output"),
+                                           downloadButton("plot_download")
+                                 ))
             )
         )
     )
