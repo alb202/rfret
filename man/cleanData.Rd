@@ -4,28 +4,29 @@
 \alias{cleanData}
 \title{Clean data from single csv file}
 \usage{
-cleanData(fileName, numberOfLinesToSkip)
+cleanData(dataTmpFile, inputFileName, csvSeparator, quoteVersion, headerOption,
+  numberOfLinesToSkip)
 }
 \arguments{
-\item{fileName}{Name of single csv file to process.}
+\item{dataTmpFile}{Location of single csv file to process.}
+
+\item{inputFileName}{csv file name.}
+
+\item{csvSeparator}{csv separator.}
+
+\item{quoteVersion}{Version of quotes used.}
+
+\item{headerOption}{Header option.}
 
 \item{numberOfLinesToSkip}{Number of lines to skip when reading the csv file, usually containing header information.}
 }
 \value{
 One dataframe is returned, containing 11 columns with the input data from a single file: \code{Experiment},
-\code{Type}, \code{Replicate}, \code{Observation}, \code{Well Row}, \code{Well Col}, \code{Content},
+\code{Type}, \code{Replicate}, \code{Observation}, \code{Well.Row}, \code{Well.Col}, \code{Content},
 \code{fret_channel}, \code{donor_channel}, \code{acceptor_channel}, \code{concentration}.
 }
 \description{
 This is an internal function that processes a single csv file and generates the
      \code{Experiment}, \code{Type}, \code{Replicate}, and \code{Observation} columns.  One data frame is
      returned with the rows of data generated from a single csv file.
-}
-\examples{
-\dontrun{
-
- cleanData(file, 4)
-
- }
-
 }
