@@ -9,6 +9,7 @@ source("../R/average_technical_replicates.R")
 source("../R/correct_fret_signal.R")
 source("../R/fit_binding_model.R")
 source("../R/make_figure.R")
+source("../R/guess_parameters.R")
 source("graphics.R")
 
 server <- function(input, output, session) {
@@ -33,11 +34,15 @@ server <- function(input, output, session) {
 
     myData <- reactive({
         df<-input_files()
+        if (is.null(df)) return(NULL)
         hideElement("splash_screen")
         showElement("raw_output")
         showElement("accept")
         values$number_of_files <- length(df)
-        if (is.null(df)) return(NULL)
+        if (input$skip_inspection == TRUE){
+            values$dataset_decisions[1:length(values$dataset_decisions)] <- TRUE
+            #input$process_all <- TRUE
+        }
         return(df)
     })
     output$filename <- renderText({
@@ -45,12 +50,13 @@ server <- function(input, output, session) {
         paste(values$file_index, "-    ", {myData()[[values$file_index]][[1]]})
     })
 
-    output$raw_output <- renderPlot(width = 750, height = 350, {
+    output$raw_output <- renderPlot({
         if(is.null(input$data_file)) return(NULL)
         showElement("accept")
         df <- data.frame(myData()[[values$file_index]][[2]])
         raw_data_plots <- inspect_raw_data(df)
-        raw_data_grid <- grid.arrange(raw_data_plots$donor, raw_data_plots$acceptor, raw_data_plots$fret, ncol=2, nrow=2)
+        raw_data_grid <- grid.arrange(raw_data_plots$fret, raw_data_plots$donor, raw_data_plots$acceptor)#, nrow=3, ncol=1, heights=rep('100%', 3), widths=rep('100%', 1))
+        return(raw_data_grid)
     })
 
     output$splash_screen <- renderPlot(once=TRUE, {
@@ -85,10 +91,11 @@ server <- function(input, output, session) {
         View(values$dataset_decisions)
     })
 
-    observeEvent(input$process_all, {
+    observeEvent(input$algorithm, {toggleElement(id="algorithm_option", condition = (input$algorithm == "advanced") )})
+
+    observeEvent(process_all_listener(), {
         print("processing")
         updateTabsetPanel(session = session,inputId = "main", selected = "full_analysis")
-        #output$processed_output <- renderPlot({ Enter batch function here })
         print(list(input$data_file$datapath[values$dataset_decisions]))
         print(list(input$data_file$name[values$dataset_decisions]))
         print(input$sep)
@@ -101,9 +108,20 @@ server <- function(input, output, session) {
                        input$quote,
                        TRUE,
                        input$skip_rows)
-        print(master_file)
-    })
 
+        atr <- average_technical_replicates(master_file, blanks = c("blank_1", "blank_2"), titrations = c("titration_1", "titration_2"))
+        print("atr")
+        cfs <- correct_fret_signal(atr)
+        print("cfs")
+        params <-  guess_parameters(cfs)
+        #fbm <- fit_binding_model(cfs, binding_model = "quadratic", parameters = params, donor_concentration = 10) #, binding_model = "hyperbola", parameters = guess_parameters(cfs))
+        #print("fbm")
+        #fig <- make_figure(fbm)
+        #print(atr)
+        output$processed_output <- renderPlot({ return(splash_screen()) })
+    })
+    process_all_listener <- reactive({input$process_all})
+    #process_all_listener <- reactive({isolate(input$skip_inspection==TRUE)})
     prelim_listener <- reactive({
         list(input$next1, input$previous, input$accept, input$reject, input$accept_all, input$accept_all_subsequent, input$data_file)
     })
@@ -120,14 +138,13 @@ server <- function(input, output, session) {
             if(!is.na(values$dataset_decisions[[values$file_index]])){
                 if(values$dataset_decisions[[values$file_index]] == TRUE){
                     output$decision_image <- renderImage({list(src = "accept.png",
-                                                               width = 50, height = 50, contentType = 'image/png',alt = "Accept")},
-                                                         deleteFile = FALSE)
-                    showElement(id = "decision_image")}
+                                                               width = 50, height = 50, contentType = 'image/png',alt = "Accept")}, deleteFile = FALSE)
+                }
                 if(values$dataset_decisions[[values$file_index]] == FALSE){
                     output$decision_image <- renderImage({list(src = "reject.png",
-                                                               width = 50, height = 50, contentType = 'image/png',alt = "Reject")},
-                                                         deleteFile = FALSE)
-                    showElement(id = "decision_image")}
+                                                               width = 50, height = 50, contentType = 'image/png',alt = "Reject")}, deleteFile = FALSE)
+                }
+                showElement(id = "decision_image")
             } else hideElement(id = "decision_image")
         }
     })
