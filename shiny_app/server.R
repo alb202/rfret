@@ -3,6 +3,7 @@ library(ggplot2)
 library(shinyjs)
 library(gridExtra)
 library(magrittr)
+library(shinythemes)
 source("../R/inspect_raw_data.R")
 source("../R/create_master_file.R")
 source("../R/average_technical_replicates.R")
@@ -39,10 +40,10 @@ server <- function(input, output, session) {
         showElement("raw_output")
         showElement("accept")
         values$number_of_files <- length(df)
-        if (input$skip_inspection == TRUE){
-            values$dataset_decisions[1:length(values$dataset_decisions)] <- TRUE
-            #input$process_all <- TRUE
-        }
+        #if (input$skip_inspection == TRUE){
+        #    values$dataset_decisions[1:length(values$dataset_decisions)] <- TRUE
+        #    #input$process_all <- TRUE
+        #}
         return(df)
     })
     output$filename <- renderText({
@@ -50,12 +51,12 @@ server <- function(input, output, session) {
         paste(values$file_index, "-    ", {myData()[[values$file_index]][[1]]})
     })
 
-    output$raw_output <- renderPlot({
+    output$raw_output <- renderPlot(height = 800, {
         if(is.null(input$data_file)) return(NULL)
-        showElement("accept")
+        #showElement("accept")
         df <- data.frame(myData()[[values$file_index]][[2]])
         raw_data_plots <- inspect_raw_data(df)
-        raw_data_grid <- grid.arrange(raw_data_plots$fret, raw_data_plots$donor, raw_data_plots$acceptor)#, nrow=3, ncol=1, heights=rep('100%', 3), widths=rep('100%', 1))
+        raw_data_grid <- grid.arrange(raw_data_plots$fret, raw_data_plots$donor, raw_data_plots$acceptor, nrow=3, ncol=1)
         return(raw_data_grid)
     })
 
@@ -128,9 +129,12 @@ server <- function(input, output, session) {
 
     observeEvent(prelim_listener(), {
         if(!is.null(values$dataset_decisions)){
-            toggleElement(id = "process_all", condition = (sum(is.na(values$dataset_decisions)) == 0))
-            toggleElement(id = "next1", condition = ((!is.null(input$data_file)) && values$file_index < values$number_of_files))
-            toggleElement(id = "previous", condition = ((!is.null(input$data_file)) && values$file_index > 1))
+            toggleElement(id = "process_all", condition = ((!is.null(input$data_file))))
+            toggleState(id = "process_all", condition = (sum(is.na(values$dataset_decisions)) == 0))
+            toggleElement(id = "next1", condition = ((!is.null(input$data_file))))
+            toggleElement(id = "previous", condition = ((!is.null(input$data_file))))
+            toggleState(id = "next1", condition = ((values$file_index < values$number_of_files)))
+            toggleState(id = "previous", condition = ((values$file_index > 1)))
             toggleElement(id = "accept", condition = (!is.null(input$data_file)))
             toggleElement(id = "reject", condition = (!is.null(input$data_file)))
             toggleElement(id = "accept_all_subsequent", condition = (!is.null(input$data_file)))
