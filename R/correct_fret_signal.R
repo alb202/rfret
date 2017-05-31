@@ -1,83 +1,133 @@
 #' @title Correct FRET signal
 #'
-#' @description This function subtracts the FRET background measured by the
-#'     blank experiment (without donor) from the raw FRET signal of the actual
-#'     titration, applying corrections given by
-#'     \href{https://doi.org/10.1093/nar/gkr1045}{Hieb AR \emph{et al} (2012)}.
+#' @description This function corrects the raw FRET signal by applying
+#'     corrections for donor bleedthrough and acceptor direct excitation. See
+#'     \href{https://doi.org/10.1093/nar/gkr1045}{Hieb AR \emph{et al} (2012)}
+#'     and \href{https://doi.org/10.1016/B978-0-12-391940-3.00011-1}{Winkler DD
+#'     \emph{et al} (2012)} for details.
 #'
-#' @param reduced_dataset A dataframe containing the fluorescence data. It must
-#'     contain at least five columns named \code{Content}, \code{donor_channel},
-#'     \code{acceptor_channel}, \code{fret_channel} and \code{concentration}.
-#'     The \code{Content} column must contain, for each row, a word describing
-#'     which data series this row belongs to (like \code{"blank"} or
-#'     \code{"titration"}). The \code{\link{average_technical_replicates}}
-#'     function produces a dataframe with this exact format.
-#' @param titration A character vector containing a word that identifies the
-#'     titration series (e.g. \code{titration}). This word must match the one in
-#'     \code{reduced_dataset$Content} (case sensitive). Defaults to
-#'     \code{"titration"}, as set by the
-#'     \code{\link{average_technical_replicates}} function.
-#' @param blank A character vector containing a word that identifies the blank
-#'     experiment series (e.g. \code{"blank"}). This word must match the one
-#'     in \code{reduced_dataset$Content} (case sensitive). Defaults to
-#'     \code{"blank"}, as set by the \code{\link{average_technical_replicates}}
-#'     function.
-#' @return A dataframe containing the corrected FRET signal. It contains two
-#'     columns named \code{concentration} and \code{fret_corrected}.
+#' @param data A dataframe containing the FRET data after avergaing over
+#'     technical replicates. This dataframe must contain the following columns:
+#'     \describe{
+#'     \item{Experiment}{A unique name identifying each experiment.}
+#'     \item{Type}{Either "blank" (no donor) or "titration" (donor present).}
+#'     \item{Observation}{A number identifying each observation in a titration
+#'     series (corresponds to the plate column numbers, if experiments are set
+#'     up as rows in a 384-well plate). The number of observations for an
+#'     experiment and its blanks must match, and a given observation number must
+#'     associate data points at the same concentration in the titration series.}
+#'     \item{concentration}{The ligand concentration in the titration series.}
+#'     \item{fret_channel}{Fluorescence intensity in the FRET channel.}
+#'     \item{acceptor_channel}{Fluorescence intensity in the acceptor channel.}
+#'     \item{donor_channel}{Fluorescence intensity in the donor channel.}
+#'     }
+#'     The output of \code{\link{average_technical_replicates}} can be used
+#'     directly as input for this function.
+#'
+#' @return A dataframe containing the corrected FRET signal. It contains three
+#'     columns:
+#'     \describe{
+#'     \item{Experiment}{A unique name identifying each experiment (same as in
+#'     the input data).}
+#'     \item{concentration}{The ligand concentration in the titration series
+#'     (same as in the input data).}
+#'     \item{fret}{The corrected FRET signal.}
+#'     }
+#'
 #' @seealso \code{\link{average_technical_replicates}} to prepare a dataset for
 #'     use with \code{correct_fret_signal}.
 #'
-#'     Hieb AR \emph{et al} (2012) Fluorescence Strategies for High-Throughput
+#'     For details on the signal correction applied by \code{correct_fret_signal},
+#'     see:
+#'     \itemize{
+#'     \item Hieb AR \emph{et al} (2012) Fluorescence Strategies for High-Throughput
 #'     Quantification of Protein Interactions. \emph{Nucleic Acids Research}
-#'     40 (5): e33
-#'     (\href{https://doi.org/10.1093/nar/gkr1045}{doi:10.1093/nar/gkr1045}) for
-#'     the details on the signal correction applied by
-#'     \code{correct_fret_signal}.
+#'     40 (5): e33 (\href{https://doi.org/10.1093/nar/gkr1045}{doi:10.1093/nar/gkr1045}) and
+#'     \item Winkler DD \emph{et al} (2012) Quantifying Chromatin-Associated
+#'     Interactions: The HI-FI System. In \emph{Methods in Enzymology} pp
+#'     243–274. Elsevier
+#'     (\href{https://doi.org/10.1016/B978-0-12-391940-3.00011-1}{doi:10.1016/B978-0-12-391940-3.00011-1}).
+#'     }
+#'
 #' @export
 
-correct_fret_signal <- function(reduced_dataset,
-                                titration = "titration",
-                                blank = "blank") {
-    # Calculate acceptor direct excitation (equation 5 in Hieb et al 2012)
-    acceptor_direct_exc <-
-        reduced_dataset$fret_channel[(reduced_dataset$Content == blank) &
-                                         (reduced_dataset$concentration != 0)] /
-        reduced_dataset$acceptor_channel[(reduced_dataset$Content == blank) &
-                                             (reduced_dataset$concentration != 0)]
-
-    # Calculate donor bleed through (equation 4 in Hieb et al 2012)
-    donor_bleed_through <-
-        mean(
-            reduced_dataset$fret_channel[(reduced_dataset$Content == titration) &
-                                             (reduced_dataset$concentration == 0)],
-            na.rm = TRUE
-        ) /
-        mean(
-            reduced_dataset$donor_channel[(reduced_dataset$Content == titration) &
-                                              (reduced_dataset$concentration == 0)],
-            na.rm = TRUE
-        )
-
-    # Calculate corrected FRET (equation 6 in Hieb et al 2012)
-    fret_corr <-
-        reduced_dataset$fret_channel[
-            (reduced_dataset$Content == titration) &
-                (reduced_dataset$concentration != 0)] -
-        donor_bleed_through * reduced_dataset$donor_channel[
-            (reduced_dataset$Content == titration) &
-                (reduced_dataset$concentration != 0)] -
-        acceptor_direct_exc * reduced_dataset$acceptor_channel[
-            (reduced_dataset$Content == titration) &
-                (reduced_dataset$concentration != 0)]
-    # Vertically shift all points such that the lowest (be it positive or
-    # negative) becomes 0:
-    fret_corr <- fret_corr - min(fret_corr)
-
-    # Build final dataframe
-    fret_corrected <- data.frame(
-        concentration = reduced_dataset$concentration[
-            (reduced_dataset$Content == titration) &
-                (reduced_dataset$concentration != 0)],
-        fret_corrected = fret_corr
-        )
+correct_fret_signal <- function(data){
+  data %>%
+    dplyr::group_by(Experiment) %>%
+    dplyr::do(correct_one_exp(.))
 }
+
+#' @title Correct FRET signal for one experiment
+#'
+#' @description This internal function corrects the raw FRET signal of a single
+#'     experiment by applying corrections for donor bleedthrough and acceptor
+#'     direct excitation. See
+#'     \href{https://doi.org/10.1093/nar/gkr1045}{Hieb AR \emph{et al} (2012)}
+#'     and \href{https://doi.org/10.1016/B978-0-12-391940-3.00011-1}{Winkler DD
+#'     \emph{et al} (2012)} for details.
+#'
+#' @param one_exp A dataframe containing the FRET data after avergaing over
+#'     technical replicates. This dataframe must contain the following columns:
+#'     \describe{
+#'     \item{Experiment}{A unique name identifying each experiment.}
+#'     \item{Type}{Either "blank" (no donor) or "titration" (donor present).}
+#'     \item{Observation}{A number identifying each observation in a titration
+#'     series (corresponds to the plate column numbers, if experiments are set
+#'     up as rows in a 384-well plate). The number of observations for an
+#'     experiment and its blanks must match, and a given observation number must
+#'     associate data points at the same concentration in the titration series.}
+#'     \item{concentration}{The ligand concentration in the titration series.}
+#'     \item{fret_channel}{Fluorescence intensity in the FRET channel.}
+#'     \item{acceptor_channel}{Fluorescence intensity in the acceptor channel.}
+#'     \item{donor_channel}{Fluorescence intensity in the donor channel.}
+#'     }
+#'     The output of \code{\link{average_technical_replicates}} can be used
+#'     directly as input for this function.
+#'
+#' @return A dataframe containing the corrected FRET signal. It contains three
+#'     columns:
+#'     \describe{
+#'     \item{Experiment}{A unique name identifying each experiment (same as in
+#'     the input data).}
+#'     \item{concentration}{The ligand concentration in the titration series
+#'     (same as in the input data).}
+#'     \item{fret}{The corrected FRET signal.}
+#'     }
+#'
+#' @seealso \code{\link{average_technical_replicates}} to prepare a dataset for
+#'     use with \code{correct_fret_signal}.
+#'
+#'     For details on the signal correction applied by \code{correct_fret_signal},
+#'     see:
+#'     \itemize{
+#'     \item Hieb AR \emph{et al} (2012) Fluorescence Strategies for High-Throughput
+#'     Quantification of Protein Interactions. \emph{Nucleic Acids Research}
+#'     40 (5): e33 (\href{https://doi.org/10.1093/nar/gkr1045}{doi:10.1093/nar/gkr1045}) and
+#'     \item Winkler DD \emph{et al} (2012) Quantifying Chromatin-Associated
+#'     Interactions: The HI-FI System. In \emph{Methods in Enzymology} pp
+#'     243–274. Elsevier
+#'     (\href{https://doi.org/10.1016/B978-0-12-391940-3.00011-1}{doi:10.1016/B978-0-12-391940-3.00011-1}).
+#'     }
+
+correct_one_exp <- function(one_exp){
+    # Calculate donor bleed through
+    only_donor <- dplyr::filter(one_exp, Type == "titration", concentration == 0)
+    donor_bleed_through <- with(only_donor, mean(fret) / mean(donor))
+
+    # Calculate acceptor direct excitation
+    only_acceptor <- one_exp %>%
+      dplyr::filter(Type == "blank", concentration != 0) %>%
+      dplyr::mutate(acceptor_direct_excitation = fret / acceptor)
+
+    # Apply correction factors
+    titration <- dplyr::filter(one_exp, Type == "titration", concentration != 0)
+    titration$donor_correction <- donor_bleed_through
+    titration$acceptor_correction <- only_acceptor$acceptor_direct_excitation
+    corrected_data <- titration %>%
+      dplyr::transmute(
+        concentration = concentration,
+        fret = fret - donor * donor_correction - acceptor * acceptor_correction)
+
+    # Subtract baseline
+    corrected_data %<>% dplyr::mutate(fret = fret - min(fret))
+  }

@@ -4,31 +4,38 @@
 \alias{average_technical_replicates}
 \title{Average technical replicates}
 \usage{
-average_technical_replicates(raw_data, titrations = NULL, blanks = NULL)
+average_technical_replicates(raw_data)
 }
 \arguments{
 \item{raw_data}{A dataframe containing the raw fluorescence data. It must
-contain at least five columns named \code{Content}, \code{donor_channel},
-\code{acceptor_channel}, \code{fret_channel} and \code{concentration}.
-The \code{Content} column must contain, for each row, a word describing
-which data series or replicate this row belongs to (like
-\code{blank_1}, \code{titration_1}, etc.).}
-
-\item{titrations}{A character vector containing words that identify the
-titration series (e.g. \code{titration}). These words must match the
-ones in \code{raw_data$Content} (case sensitive).}
-
-\item{blanks}{A character vector containing words that identify the blank
-experiment series (e.g. \code{blank}). These words must match the ones
-in \code{raw_data$Content} (case sensitive).}
+contain at least 8 columns named:
+\describe{
+\item{Experiment}{A unique name identifying each experiment.}
+\item{Type}{Either "blank" (no donor) or "titration" (donor present).}
+\item{Replicate}{A number identifying the technical replicate (1, 2, etc.).}
+\item{Observation}{A number identifying each observation in a titration
+series (corresponds to the plate column numbers, if experiments are set
+up as rows in a 384-well plate). The number of observations for an
+experiment and its blanks must match, and a given observation number must
+associate data points at the same concentration in the titration series.}
+\item{concentration}{The ligand concentration in the titration series.}
+\item{fret_channel}{Fluorescence intensity in the FRET channel.}
+\item{acceptor_channel}{Fluorescence intensity in the acceptor channel.}
+\item{donor_channel}{Fluorescence intensity in the donor channel.}
+}
+The output of \code{\link{format_data}} can be used directly as input for
+this function.}
 }
 \value{
-A dataframe containing the reduced dataset. It contains five columns
-    named \code{Content}, \code{donor_channel}, \code{acceptor_channel},
-    \code{fret_channel} and \code{concentration}. The \code{Content} column
-    contains only two words: \code{"blank"} and \code{"titration"}.
+A dataframe containing the reduced dataset after averaging across
+    replicates. It contains all of the above columns \emph{except}
+    \code{Replicate}, because it returns the average values over replicates.
 }
 \description{
 This function calculates averages of fluorescence values from
     an arbitrary number of technical replicates.
+}
+\seealso{
+\code{\link{format_data}} to prepare datasets for use with
+    \code{average_technical_replicates}.
 }
