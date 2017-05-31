@@ -34,7 +34,7 @@ ui <- fluidPage(
                          wellPanel(
                                    fluidRow(
                                        column(5, radioButtons('sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'),',')),
-                                       column(5, radioButtons('quote', 'Quote', c(None='', 'Double Quote'='"','Single Quote'="'"),'"'))
+                                       column(5, radioButtons('quote', 'Quote', c(None='', 'Double Quote'='"','Single Quote'="'"),''))
                                    ))),
                 tabPanel("Advanced Options", tags$hr(), radioButtons('algorithm', 'Algorithm for main analysis:', c('Hyperbola'='basic',
                         'Quadratic'="advanced")),
