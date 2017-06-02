@@ -63,30 +63,37 @@ ui <- fluidPage(
         ),
         mainPanel(
             tabsetPanel(id="main",
-                        tabPanel(title="Inspect Raw Data",value="inspect",
+                        tabPanel(title = "Welcome", value = "welcome",
+                                 wellPanel(
+                                     fluidRow(column(width=12, offset=0)),
+                                     plotOutput("splash_screen"),
+                                     fluidRow(column(width=12, offset=0))
+                                 )),
+                        tabPanel(title = "Inspect Raw Data", value = "inspect",
                                  wellPanel(
                                            # fluidRow(
                                            #     column(width = 2, offset = 4, hidden(actionButton(inputId = "process_all", label ="Process the selected files")))
                                            #     ),
                                            fluidRow(
-                                                column(width = 12, offset = 0,
-                                                       imageOutput("decision_image", width = 30, height = 30),
-                                                       h3(textOutput("filename"))
-                                               )),
-                                           plotOutput("splash_screen"),
+                                                column(width = 1, offset = 0,
+                                                       imageOutput("decision_image", width = 30, height = 30)),
+                                                column(width = 10, offset = 0,
+                                                       h4(textOutput("filename")))
+                                               ),
+                                           #plotOutput("splash_screen"),
                                            fluidRow(
                                                column(width = 3, offset = 0,
-                                                    column(width = 1, offset = 0, hidden(actionButton(inputId = "previous", label ="Previous"))),
-                                                    column(width = 1, offset = 4 , hidden(actionButton(inputId = "next1", label ="Next")))
+                                                    column(width = 1, offset = 0, disabled(actionButton(inputId = "previous", label ="Previous"))),
+                                                    column(width = 1, offset = 4 ,disabled(actionButton(inputId = "next1", label ="Next")))
                                                     ),
                                                column(width = 3, offset = 0,
-                                                    column(width = 1, offset = 0, hidden(actionButton(inputId = "accept", label="Accept"))),
-                                                    column(width = 1, offset = 3, hidden(actionButton(inputId = "reject", label="Reject")))
+                                                    column(width = 1, offset = 0, disabled(actionButton(inputId = "accept", label="Accept"))),
+                                                    column(width = 1, offset = 3, disabled(actionButton(inputId = "reject", label="Reject")))
                                                     ),
                                                column(width = 6, offset = 0,
-                                                    column(width = 1, offset = 0, hidden(actionButton(inputId = "accept_all", label="Accept All"))),
+                                                    column(width = 1, offset = 0, disabled(actionButton(inputId = "accept_all", label="Accept All"))),
                                                     #column(width = 1, offset = 2, hidden(actionButton(inputId = "accept_all_subsequent", label ="Accept all subsequent"))),
-                                                    column(width = 1, offset = 5, hidden(actionButton(inputId = "process_all", label="Process the files ...")))
+                                                    column(width = 1, offset = 5, disabled(actionButton(inputId = "process_all", label="Process the files ...")))
                                                     )
                                            ),tags$hr(),
                                            plotOutput(outputId = "raw_output", width = "100%", height = "100%")

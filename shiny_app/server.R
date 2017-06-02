@@ -21,17 +21,17 @@ server <- function(input, output, session) {
         if (is.null(input$data_file)) return(NULL)
         objectsLoaded <- list()
         for(i in 1:length(input$data_file$name)){
-            print("add dataset1")
-            print(input$data_file[i, 'datapath'])
-            print(input$skip_rows)
+            # print("add dataset1")
+            # print(input$data_file[i, 'datapath'])
+            # print(input$skip_rows)
             df <- read_delim(file = input$data_file[i, 'datapath'],
                             delim = input$sep,
                             skip = as.numeric(input$skip_rows),
                             quote = input$quote
-                            )
-            #df <- list(input$data_file$name[i], df)
-            print("add dataset2")
-            #objectsLoaded[[length(objectsLoaded)+1]] <- df
+                             )
+            # df <- list(input$data_file$name[i], df)
+            # print("add dataset2")
+            # objectsLoaded[[length(objectsLoaded)+1]] <- df
             objectsLoaded[[ input$data_file$name[i] ]] <- df
         }
         values$file_index <- 1
@@ -43,11 +43,17 @@ server <- function(input, output, session) {
     myData <- reactive({
         df<-input_files()
         if (is.null(df)) return(NULL)
-        hideElement("splash_screen")
-        showElement("raw_output")
-        showElement("accept")
+        #hideElement("splash_screen")
+        #showElement("raw_output")
+        #showElement("accept")
         values$number_of_files <- length(df)
         updateTabsetPanel(session = session, inputId = "sidebar", selected = "advanced")
+        updateTabsetPanel(session = session, inputId = "main", selected = "inspect")
+        #enable(id = "next1")
+        #enable(id = "previous")
+        #enable(id = "accept")
+        #enable(id = "reject")
+        #enable(id = "accept_all")
         #if (input$skip_inspection == TRUE){
         #    values$dataset_decisions[1:length(values$dataset_decisions)] <- TRUE
         #    #input$process_all <- TRUE
@@ -69,10 +75,10 @@ server <- function(input, output, session) {
     })
 
     output$splash_screen <- renderPlot(once=TRUE, {
-        if(is.null(input$data_file)){
-            hideElement("raw_output")
+        #if(is.null(input$data_file)){
+            #hideElement("raw_output")
             return(splash_screen())
-        } else return(NULL)
+        #} #else return(NULL)
     })
 
     observeEvent(input$accept, label = "Accept", {
@@ -95,10 +101,10 @@ server <- function(input, output, session) {
         values$dataset_decisions[1:values$number_of_files] <- TRUE
         View(values$dataset_decisions)
     })
-    observeEvent(input$accept_all_subsequent, label = "Accept All Subsequent", {
-        values$dataset_decisions[values$file_index:values$number_of_files] <- TRUE
-        View(values$dataset_decisions)
-    })
+    # observeEvent(input$accept_all_subsequent, label = "Accept All Subsequent", {
+    #     values$dataset_decisions[values$file_index:values$number_of_files] <- TRUE
+    #     View(values$dataset_decisions)
+    # })
 
     observeEvent(input$algorithm, {
         #if(input$algorithm == "quadratic") updateCheckboxInput(session, "hill_coefficient", value = FALSE)
@@ -170,25 +176,28 @@ server <- function(input, output, session) {
     })
 
     observeEvent(prelim_listener(), {
-        if(!is.null(values$dataset_decisions)){
-            toggleElement(id = "process_all", condition = ((!is.null(input$data_file))))
+        print("prelim listener")
+        #if(!is.null(values$dataset_decisions)){
+        if(!is.null(myData())){
+            print("toggles")
+            #toggleElement(id = "process_all", condition = ((!is.null(input$data_file))))
             toggleState(id = "process_all", condition = (sum(is.na(values$dataset_decisions)) == 0))
-            toggleElement(id = "next1", condition = ((!is.null(input$data_file))))
-            toggleElement(id = "previous", condition = ((!is.null(input$data_file))))
-            toggleState(id = "next1", condition = ((values$file_index < values$number_of_files)))
+            #toggleElement(id = "next1", condition = ((!is.null(input$data_file))))
+            #toggleElement(id = "previous", condition = ((!is.null(input$data_file))))
+            toggleState(id = "next1", condition = (values$file_index < values$number_of_files))
             toggleState(id = "previous", condition = ((values$file_index > 1)))
-            toggleElement(id = "accept", condition = (!is.null(input$data_file)))
-            toggleElement(id = "reject", condition = (!is.null(input$data_file)))
-            toggleElement(id = "accept_all_subsequent", condition = (!is.null(input$data_file)))
-            toggleElement(id = "accept_all", condition = (!is.null(input$data_file)))
+            toggleState(id = "accept", condition = (!is.null(input$data_file)))
+            toggleState(id = "reject", condition = (!is.null(input$data_file)))
+            #toggleElement(id = "accept_all_subsequent", condition = (!is.null(input$data_file)))
+            #toggleElement(id = "accept_all", condition = (!is.null(input$data_file)))
             if(!is.na(values$dataset_decisions[[values$file_index]])){
                 if(values$dataset_decisions[[values$file_index]] == TRUE){
                     output$decision_image <- renderImage({list(src = "accept.png",
-                                                               width = 50, height = 50, contentType = 'image/png',alt = "Accept")}, deleteFile = FALSE)
+                                                               width = 30, height = 30, contentType = 'image/png',alt = "Accept")}, deleteFile = FALSE)
                 }
                 if(values$dataset_decisions[[values$file_index]] == FALSE){
                     output$decision_image <- renderImage({list(src = "reject.png",
-                                                               width = 50, height = 50, contentType = 'image/png',alt = "Reject")}, deleteFile = FALSE)
+                                                               width = 30, height = 30, contentType = 'image/png',alt = "Reject")}, deleteFile = FALSE)
                 }
                 showElement(id = "decision_image")
             } else hideElement(id = "decision_image")
