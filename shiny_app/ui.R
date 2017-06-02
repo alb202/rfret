@@ -17,8 +17,8 @@ ui <- fluidPage(
     titlePanel(strong("RFret - Rapid FRET Analysis in R"), windowTitle = "RFret - Rapid FRET Analysis in R"),
     sidebarLayout(
         sidebarPanel(
-            tabsetPanel(
-                tabPanel("Input datasets",
+            tabsetPanel(id="sidebar",
+                tabPanel(title = "Get Datasets", value = "get",
                          tags$hr(),
                          fileInput('data_file', 'Choose 1 or more FRET data files:',
                                    accept=c('text/csv',
@@ -36,37 +36,43 @@ ui <- fluidPage(
                                        column(5, radioButtons('sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'),',')),
                                        column(5, radioButtons('quote', 'Quote', c(None='', 'Double Quote'='"','Single Quote'="'"),''))
                                    ))),
-                tabPanel("Advanced Options", tags$hr(), radioButtons('algorithm', 'Algorithm for main analysis:', c('Hyperbola'='basic',
-                        'Quadratic'="advanced")),
-                        hidden(
-                         checkboxInput('algorithm_option', 'Option2', value = FALSE)),
-                        textInput("fret_min", "Minimum FRET signal", value = "", width = NULL, placeholder = NULL),
-                        textInput("fret_max", "Maximum FRET signal", value = "", width = NULL, placeholder = NULL),
-                        textInput("fret_kd", "kd", value = "", width = NULL, placeholder = NULL),
-                         selectInput('option3', label ='Option3',
-                                     choices=c("1" = 1,"2"=2,"3"=3),
-                                     multiple=FALSE, selectize=TRUE,selected="1"),
-                         selectInput('option4', label ='Option4',
-                                     choices=c("4" = 4,"5"=5,"6"=6),
-                                     multiple=TRUE, selectize=TRUE,selected="4")
+                tabPanel(title = "Advanced Options", value = "advanced",
+                         tags$hr(),
+                         radioButtons('algorithm', 'Select the algorithm for fitting the binding model:', c('Hyperbolic'='hyperbolic',
+                                                                                     'Quadratic'="quadratic")),
+                         tags$hr(),
+                         checkboxInput("hill_coefficient", "Fit the Hill Coefficient", value = FALSE),
+                         textInput('donor_concentration', 'Donor Concentration', value = NULL, width = 200)
+
+
+                         #textInput("fret_min", "Minimum FRET signal", value = "", width = NULL, placeholder = NULL),
+                         #textInput("fret_max", "Maximum FRET signal", value = "", width = NULL, placeholder = NULL),
+                         #textInput("fret_kd", "kd", value = "", width = NULL, placeholder = NULL),
+                         #selectInput('option3', label ='Option3',
+                         #            choices=c("1" = 1,"2"=2,"3"=3),
+                         #            multiple=FALSE, selectize=TRUE,selected="1"),
+                         #selectInput('option4', label ='Option4',
+                         #            choices=c("4" = 4,"5"=5,"6"=6),
+                         #           multiple=TRUE, selectize=TRUE,selected="4")
                 ),
-                tabPanel("Help",
+                tabPanel(title = "Help", value = "help",
                          tags$hr(),
                          h5("Help information")
                 )
             )
         ),
         mainPanel(
-            tabsetPanel("main",
-                        tabPanel("Pre-processing",
+            tabsetPanel(id="main",
+                        tabPanel(title="Inspect Raw Data",value="inspect",
                                  wellPanel(
                                            # fluidRow(
                                            #     column(width = 2, offset = 4, hidden(actionButton(inputId = "process_all", label ="Process the selected files")))
                                            #     ),
                                            fluidRow(
-                                               column(width = 1, offset = 0, imageOutput("decision_image", width = 30, height = 30)),
-                                               column(width = 11, offset = 0, h3(textOutput("filename")))
-                                               ),
+                                                column(width = 12, offset = 0,
+                                                       imageOutput("decision_image", width = 30, height = 30),
+                                                       h3(textOutput("filename"))
+                                               )),
                                            plotOutput("splash_screen"),
                                            fluidRow(
                                                column(width = 3, offset = 0,
@@ -85,7 +91,7 @@ ui <- fluidPage(
                                            ),tags$hr(),
                                            plotOutput(outputId = "raw_output", width = "100%", height = "100%")
                                            )),
-                        tabPanel(title = "Full analysis", value = "full_analysis",
+                        tabPanel(title = "Fit the Binding Model", value = "fit",
                                  wellPanel(
                                            h1(textOutput("Batch Analysis")),
                                            plotOutput("processed_output"),
