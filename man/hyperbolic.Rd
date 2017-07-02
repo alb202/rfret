@@ -11,12 +11,10 @@ hyperbolic(conc, parameters)
 
 \item{parameters}{A named list of parameters to be refined against the
 experimental data. Parameters for this equation are a binding constant
-(\code{kd}), a Hill coefficient (\code{n}), and values of minimal and
-maximal signal (\code{signal_min}, \code{signal_max}).}
+(\code{kd}), and values of minimal and maximal signal (\code{signal_min},
+\code{signal_max}).}
 }
 \description{
 This function sets up the hyperbolic model equation for use by
-    \code{\link{fit_binding_model}}. If a Hill coefficient different from 1
-    is specified in the set of parameters, this equation will describe a Hill
-    model.
+    \code{\link{fit_binding_model}}.
 }
