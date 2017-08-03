@@ -42,7 +42,8 @@ ui <- fluidPage(
                                                                                      'Quadratic'="quadratic")),
                          tags$hr(),
                          checkboxInput("hill_coefficient", "Fit the Hill Coefficient", value = FALSE),
-                         textInput('donor_concentration', 'Donor Concentration', value = NULL, width = 200)
+                         textInput('donor_concentration', 'Donor Concentration (required if algorithm is quadratic)', value = NULL, width = 120)
+                         #textOutput("Enter a donor concentration or change the algorithm!")
 
 
                          #textInput("fret_min", "Minimum FRET signal", value = "", width = NULL, placeholder = NULL),

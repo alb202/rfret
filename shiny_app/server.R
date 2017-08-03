@@ -5,6 +5,7 @@ library(gridExtra)
 library(magrittr)
 library(readr)
 library(shinythemes)
+library(cowplot)
 source("../R/fret_inspect_raw_data.R")
 source("../R/fret_format_data.R")
 source("../R/fret_average_replicates.R")
@@ -130,6 +131,8 @@ server <- function(input, output, session) {
 
     observeEvent(process_all_listener(), {
         print("processing")
+        if(input$algorithm=="quadratic")
+            req(input$donor_concentration)
         updateTabsetPanel(session = session, inputId = "main", selected = "fit")
         #print(class(lapply(myData()[values$dataset_decisions], "[[", 2)))
         #print(input$data_file$datapath[values$dataset_decisions])
@@ -142,18 +145,34 @@ server <- function(input, output, session) {
         #print(input$skip_rows)
         #raw_data <- format_data(input = lapply(myData()[values$dataset_decisions], "[[", 2), skip_lines = 0)
         #df_list <- myData()[values$dataset_decisions]
+        print("input_files")
+        print(input$data_file[,"name"])
         ffd <- input_files()
         print(values$dataset_names)
         print(values$dataset_decisions)
         print(values$dataset_names[values$dataset_decisions])
-        ffd <- ffd[ffd$Experiment %in% values$dataset_names[values$dataset_decisions], ]
+        print("ffd 1")
+        print(ffd)
+        print(input$data_file[,"name"][values$dataset_decisions])
+        #ffd <- ffd[ffd$Experiment %in% values$dataset_names[values$dataset_decisions], ]
+        ffd <- ffd[ffd$Experiment %in% input$data_file[,"name"][values$dataset_decisions], ]
+        print("ffd 2")
+        print(ffd)
+        print(class(input$donor_concentration))
+        if(isTRUE(input$hill_coefficient) && input$algorithm!="quadratic"){
+            binding_model <- "hill"
+            print("binding is hill")
+        } else{
+            binding_model <- input$algorithm
+            print("binding is not hill")
+        }
         figure <- ffd %>%
             fret_average_replicates() %>%
             fret_correct_signal(output_directory = "./corrected_data") %>%
-            fit_binding_model(binding_model = "quadratic",
-                              probe_concentration = 5,
+            fit_binding_model(binding_model = binding_model,
+                              probe_concentration = as.numeric(input$donor_concentration),
                               output_directory = "./fit_results") %>%
-            make_figure(probe_concentration = 5,
+            make_figure(probe_concentration = as.numeric(input$donor_concentration),
                         output_directory = "./final_figures",
                         plot_format = "png")
 
