@@ -5,6 +5,7 @@ library(gridExtra)
 library(magrittr)
 library(readr)
 library(shinythemes)
+library(shinyFiles)
 library(cowplot)
 source("../R/fret_inspect_raw_data.R")
 source("../R/fret_format_data.R")
@@ -18,17 +19,21 @@ source("graphics.R")
 
 server <- function(input, output, session) {
     values <- reactiveValues()
+
     input_files <- reactive({
+        toggleState(id="find_dir", condition = (input$save == TRUE))
         if (is.null(input$data_file)) return(NULL)
         objectsLoaded <- list()
+        disable(id="save")
         for(i in 1:length(input$data_file$name)){
             # print("add dataset1")
             # print(input$data_file[i, 'datapath'])
             # print(input$skip_rows)
             df <- read_delim(file = input$data_file[i, 'datapath'],
-                            delim = input$sep,
-                            skip = as.numeric(input$skip_rows),
-                            quote = input$quote
+                             delim = ",",
+                            #delim = input$sep,
+                            skip = as.numeric(input$skip_rows)
+                            #quote = input$quote
                              )
             # df <- list(input$data_file$name[i], df)
             # print("add dataset2")
@@ -38,6 +43,7 @@ server <- function(input, output, session) {
         values$file_index <- 1
         #values$number_of_files <- length(objectsLoaded)
         print("number of files: ")
+        #save_files = input$save
         print(values$number_of_files)
         values$dataset_decisions <- rep(NA, length(objectsLoaded))
         values$dataset_names <- sub(names(objectsLoaded),
@@ -124,13 +130,31 @@ server <- function(input, output, session) {
     #     View(values$dataset_decisions)
     # })
 
+
+    observeEvent(input$save, label = "saveFiles", {
+        toggleState(id="find_dir", condition = (input$save == TRUE))
+    })
+
     observeEvent(input$algorithm, {
         #if(input$algorithm == "quadratic") updateCheckboxInput(session, "hill_coefficient", value = FALSE)
         #if(input$algorithm == "hyperbolic") updateCheckboxInput(session, "donor_concentration", value = "")
         toggleState(id="donor_concentration", condition = (input$algorithm == "quadratic"))
         toggleState(id="hill_coefficient", condition = (input$algorithm == "hyperbolic"))})
 
-    observeEvent(process_all_listener(), {
+    output$save_dir <- renderText({
+        volumes <- c("UserFolder"="/home/ab")
+        saveDir <- parseDirPath(volumes, input$find_dir)
+        return(saveDir)
+    })
+
+    observe({
+        volumes <- c("UserFolder"="/home/ab")
+        shinyDirChoose(input, "find_dir", roots=volumes, session=session)
+        saveDir <- parseDirPath(volumes, input$find_dir)
+        print(saveDir)
+    })
+
+observeEvent(process_all_listener(), {
         print("processing")
         if(input$algorithm=="quadratic")
             req(input$donor_concentration)

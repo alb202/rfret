@@ -30,11 +30,16 @@ ui <- fluidPage(
                          #checkboxInput('skip_inspection', 'Skip inspection of raw data?', FALSE),
                          #tags$hr(style="border-color: gray; height: 33px;"),
                          #tags$h4("Data formatting options"),
-                         textInput('skip_rows', 'How many rows should be skipped?', 4, width = 250),
+                         textInput('skip_rows', 'How many rows of each file should be skipped?', 4, width = 250),
                          wellPanel(
                                    fluidRow(
-                                       column(5, radioButtons('sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'),',')),
-                                       column(5, radioButtons('quote', 'Quote', c(None='', 'Double Quote'='"','Single Quote'="'"),''))
+                                       # column(5, radioButtons('sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'),',')),
+                                       # column(5, radioButtons('quote', 'Quote', c(None='', 'Double Quote'='"','Single Quote'="'"),''))
+                                       column(10, checkboxInput("save", " Save Files to local folder ...", value = FALSE)),
+                                       column(10, h5(textOutput("save_dir"))),
+                                       column(10, shinyFiles::shinyDirButton(id = "find_dir",
+                                                                             label = "Select the save directory",
+                                                                             title = "Select directory ..."))
                                    ))),
                 tabPanel(title = "Algorithm", value = "advanced",
                          tags$hr(),
