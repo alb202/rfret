@@ -92,10 +92,11 @@ server <- function(input, output, session) {
     })
 
     output$splash_screen <- renderPlot(once=TRUE, {
-        #if(is.null(input$data_file)){
-            #hideElement("raw_output")
-            return(splash_screen())
-        #} #else return(NULL)
+        return(splash_screen())
+    })
+
+    output$decision_indicator <- renderPlot(once=FALSE, {
+        return(decision_indicator(decision_index = values$dataset_decisions, position_index = values$file_index))
     })
 
     observeEvent(input$accept, label = "Accept", {
@@ -242,16 +243,19 @@ server <- function(input, output, session) {
             #toggleElement(id = "accept_all", condition = (!is.null(input$data_file)))
             if(!is.na(values$dataset_decisions[[values$file_index]])){
                 if(values$dataset_decisions[[values$file_index]] == TRUE){
-                    output$decision_image <- renderImage({list(src = "accept.png",
+                    output$decision_image <- renderImage({list(src = "green_check.png",
                                                                width = 30, height = 30, contentType = 'image/png',alt = "Accept")}, deleteFile = FALSE)
                 }
                 if(values$dataset_decisions[[values$file_index]] == FALSE){
-                    output$decision_image <- renderImage({list(src = "reject.png",
+                    output$decision_image <- renderImage({list(src = "red_x.png",
                                                                width = 30, height = 30, contentType = 'image/png',alt = "Reject")}, deleteFile = FALSE)
                 }
-                showElement(id = "decision_image")
-            } else hideElement(id = "decision_image")
+            } else {
+                output$decision_image <- renderImage({list(src = "yellow_question.png",
+                                                           width = 30, height = 30, contentType = 'image/png',alt = "Uninspected")}, deleteFile = FALSE)
+            }
         }
+        showElement(id = "decision_image")
     })
     #shinyApp(ui, server)
 }

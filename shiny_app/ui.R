@@ -18,7 +18,7 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
             tabsetPanel(id="sidebar",
-                tabPanel(title = "Get Datasets", value = "get",
+                tabPanel(title = "Datasets", value = "get",
                          tags$hr(),
                          fileInput('data_file', 'Choose 1 or more FRET data files:',
                                    accept=c('text/csv',
@@ -36,12 +36,12 @@ ui <- fluidPage(
                                        column(5, radioButtons('sep', 'Separator', c(Comma=',', Semicolon=';', Tab='\t'),',')),
                                        column(5, radioButtons('quote', 'Quote', c(None='', 'Double Quote'='"','Single Quote'="'"),''))
                                    ))),
-                tabPanel(title = "Advanced Options", value = "advanced",
+                tabPanel(title = "Algorithm", value = "advanced",
                          tags$hr(),
                          radioButtons('algorithm', 'Select the algorithm for fitting the binding model:', c('Hyperbolic'='hyperbolic',
                                                                                      'Quadratic'="quadratic")),
                          tags$hr(),
-                         checkboxInput("hill_coefficient", "Fit the Hill Coefficient", value = FALSE),
+                         checkboxInput("hill_coefficient", "Fit the Hill Coefficient (optional if algorithm is quadratic)", value = FALSE),
                          textInput('donor_concentration', 'Donor Concentration (required if algorithm is quadratic)', value = NULL, width = 120)
                          #textOutput("Enter a donor concentration or change the algorithm!")
 
@@ -78,8 +78,10 @@ ui <- fluidPage(
                                            fluidRow(
                                                 column(width = 1, offset = 0,
                                                        imageOutput("decision_image", width = 30, height = 30)),
-                                                column(width = 10, offset = 0,
-                                                       h4(textOutput("filename")))
+                                                column(width = 5, offset = 0,
+                                                       h4(textOutput("filename"))),
+                                                column(width = 6, offset = 0,
+                                                       imageOutput("decision_indicator", height = 30))
                                                ),
                                            #plotOutput("splash_screen"),
                                            fluidRow(

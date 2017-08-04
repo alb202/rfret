@@ -23,3 +23,23 @@ splash_screen <- function(){
               legend.position="none")
     return(p)
 }
+
+decision_indicator <- function(decision_index, position_index){
+    decision_index[decision_index==TRUE] <- as.character("g")
+    decision_index[decision_index==FALSE] <- as.character("r")
+    decision_index[is.na(decision_index)] <- as.character("y")
+    decision_index <- factor(decision_index, levels = c("g", "r", "y"), exclude = NULL, ordered = TRUE)
+    decision_length <- length(decision_index)
+    df <- data.frame(index=1:decision_length,
+                     decisions=decision_index,
+                     row=1,
+                     stringsAsFactors = TRUE)
+    p <- ggplot(df, aes(x = index, y = row)) +
+        geom_tile(aes(fill = decisions), width=.8+(.2/decision_length), height=1) +
+        theme_void() +
+        theme(legend.position="none") +
+        geom_rect(mapping = aes(xmin=position_index-.4-(.1/decision_length), xmax=position_index+.4+(.1/decision_length), ymin=0.5, ymax=1.5, fill=NULL), color="black", alpha = 0) +
+        scale_fill_manual(values = c("g"="green", "r"="red", "y"="yellow"))
+    return(p)
+}
+
