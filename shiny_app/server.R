@@ -72,6 +72,7 @@ server <- function(input, output, session) {
         values$number_of_files <- length(ird)
         updateTabsetPanel(session = session, inputId = "sidebar", selected = "advanced")
         updateTabsetPanel(session = session, inputId = "main", selected = "inspect")
+        showElement(id = "decision_indicator")
         #enable(id = "next1")
         #enable(id = "previous")
         #enable(id = "accept")
@@ -101,7 +102,7 @@ server <- function(input, output, session) {
         return(splash_screen())
     })
 
-    output$decision_indicator <- renderPlot(once=FALSE, {
+    output$decision_indicator <- renderPlot(once=FALSE, height = 20, bg = "transparent", {
         return(decision_indicator(decision_index = values$dataset_decisions, position_index = values$file_index))
     })
 
