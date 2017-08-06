@@ -86,7 +86,7 @@ server <- function(input, output, session) {
     })
     output$filename <- renderText({
         if(is.null(input$data_file)) return(NULL)
-        paste(values$file_index, " - ", values$dataset_names[[values$file_index]])
+            return(paste(values$file_index, " : ", values$dataset_names[[values$file_index]]))
     })
 
     output$raw_output <- renderPlot(height = 800, {
