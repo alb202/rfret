@@ -74,7 +74,10 @@ server <- function(input, output, session) {
         # print(!("output_dir" %in% values) | input$save==FALSE)
         if(input$save==FALSE)
             isolate(values$output_dir <- NULL)
-
+        if(input$save==TRUE & !is.null(isolate(values$output_dir))){
+            if(!isTRUE(dir.exists(paths = isolate(values$output_dir))))
+                dir.create(path = isolate(values$output_dir))
+        }
         # Use the RFRET function to format the data frames
         ffd <- fret_format_data(input = objectsLoaded)
         return(ffd)
@@ -174,10 +177,10 @@ server <- function(input, output, session) {
         values$save_dir <- save_dir
         timestamp <- strsplit(x = as.character(Sys.time()), split = " ")
         output_dir <- paste(save_dir, "/", timestamp[[1]][1], "_", timestamp[[1]][2], sep = "")
-        if(!isTRUE(dir.exists(paths = output_dir)))
-            dir.create(path = output_dir)
+        # if(!isTRUE(dir.exists(paths = output_dir)))
+        #     dir.create(path = output_dir)
         isolate(values$output_dir <- output_dir)
-        print(values$save_dir)
+        print(isolate(values$save_dir))
         print(isolate(values$output_dir))
     })
 
