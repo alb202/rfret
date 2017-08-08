@@ -9,7 +9,7 @@ splash_screen <- function(){
     p <- ggplot(data.frame(x=c(0, 2)), aes(x)) +
         stat_function(fun=log_curve1, n = 50, geom = "point", aes(colour="red")) +
         stat_function(fun=log_curve2, n = 40, geom = "point", aes(colour="green")) +
-        stat_function(fun=log_curve3, n = 40, geom = "point", aes(colour="yelow")) +
+        stat_function(fun=log_curve3, n = 40, geom = "point", aes(colour="grey")) +
         annotate("text", x = 3, y = 5, label = 'bold("RFRET")', color = "black",
                  size=20, parse=TRUE) +
         ylim(0, 10) +
@@ -39,7 +39,7 @@ decision_indicator <- function(decision_index, position_index){
         theme_void() +
         theme(legend.position="none") +
         geom_rect(mapping = aes(xmin=position_index-.4-(.1/decision_length), xmax=position_index+.4+(.1/decision_length), ymin=0.5, ymax=1.5, fill=NULL), color="black", alpha = 0) +
-        scale_fill_manual(values = c("g"="green", "r"="red", "y"="yellow"))
+        scale_fill_manual(values = c("g"="green", "r"="red", "y"="grey"))
     return(p)
 }
 
