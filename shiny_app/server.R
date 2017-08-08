@@ -255,7 +255,8 @@ observeEvent(process_all_listener(), {
         if(!is.null(myData())){
             print("toggles")
             #toggleElement(id = "process_all", condition = ((!is.null(input$data_file))))
-            toggleState(id = "process_all", condition = (sum(is.na(values$dataset_decisions)) == 0))
+            toggleState(id = "process_all", condition = (sum(is.na(values$dataset_decisions)) == 0 &
+                                                             (sum(values$dataset_decisions==TRUE)>0)))
             #toggleElement(id = "next1", condition = ((!is.null(input$data_file))))
             #toggleElement(id = "previous", condition = ((!is.null(input$data_file))))
             toggleState(id = "next1", condition = (values$file_index < values$number_of_files))
