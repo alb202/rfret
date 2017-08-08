@@ -88,7 +88,8 @@ ui <- fluidPage(
                                              tags$table(width="100%", cellspacing=0, cellpadding=0, bordercolor="none", border=0,  height="5%",
                                                         #tags$style(type='text/css','#table {background-color: transparent; border-color: red}'),
                                                         tags$colgroup(
-                                                            tags$col(width="50%"),
+                                                            tags$col(width="40%"),
+                                                            tags$col(width="10%"),
                                                             tags$col(width="10%"),
                                                             tags$col(width="10%"),
                                                             tags$col(width="10%"),
@@ -96,7 +97,7 @@ ui <- fluidPage(
                                                             tags$col(width="10%")
                                                         ),
                                                         tags$tr(bordercolor="red",
-                                                            tags$td(colspan=6, valign="bottom", height="50%",
+                                                            tags$td(colspan=7, valign="bottom", height="50%",
                                                                     hidden(plotOutput("decision_indicator", height = "5%")))),
                                                         tags$tr(
                                                             tags$td(valign="top", h3(textOutput("filename"))),
@@ -104,47 +105,10 @@ ui <- fluidPage(
                                                             tags$td(valign="bottom", actionButton(inputId = "reject", label="Reject")),
                                                             tags$td(""),
                                                             tags$td(valign="bottom", disabled(actionButton(inputId = "previous", label ="Previous"))),
-                                                            tags$td(valign="bottom", disabled(actionButton(inputId = "next1", label ="Next")))
+                                                            tags$td(valign="bottom", disabled(actionButton(inputId = "next1", label ="Next"))),
+                                                            tags$td("")
                                                         )))),
-                                     #tags$hr(),
-                                     plotOutput(outputId = "raw_output", width = "100%", height = "100%")
-                                 )),
-
-                                     #     column(width = 12, offset = 0, align="center",
-                                     #            hidden(plotOutput("decision_indicator", height = 30)))
-                                     # ),
-                                     # fluidRow(
-                                     #     column(width = 6, offset = 0,
-                                     #            #column(width = 1, offset = 0,imageOutput("decision_image", width = 30, height = 30), align="center"),
-                                     #            column(width = 12, offset = 0, h3(textOutput("filename"),
-                                     #                                                            tags$style(HTML('#filename{vertical-align: top; height: 20px;}'))))),
-                                     #     #style='padding:0px;text-align:center;align-content:left;'))),
-                                     #     column(width = 3, offset = 0, tags$style(type='image/css', "{vertical-align:bottom;}"),
-                                     #            column(width = 6, offset = 0, disabled(tags$head(
-                                     #                tags$style(HTML('#accept{color: #fff; background-color: #337ab7; border-color: #2e6da4}'))
-                                     #            ),
-                                     #            actionButton(inputId = "accept",
-                                     #                         label="Accept",
-                                     #                         width = '130%', style='padding:1px;vertical-align:top'))),
-                                     #            column(width = 6, offset = 0, disabled(tags$head(
-                                     #                tags$style(HTML('#reject{color: #fff; background-color: #337ab7; border-color: #2e6da4}'))
-                                     #            ),
-                                     #            actionButton(inputId = "reject",
-                                     #                         label="Reject",
-                                     #                         width = '130%', style='padding:1px;text-align:center')))),
-                                     #     column(width = 3, offset = 0, tags$style(type='image/css', "{vertical-align: bottom; }"),
-                                     #            column(width = 6, offset = 0, disabled(actionButton(inputId = "previous",
-                                     #                                                                label ="Previous",
-                                     #                                                                width = '130%', style='padding:1px;text-align:center'))),
-                                     #            column(width = 6, offset = 0, disabled(actionButton(inputId = "next1",
-                                     #                                                                label ="Next",
-                                     #                                                                width = '130%', style='padding:1px;text-align:center'))))
-
-
-                                     # ),
-                                     #tags$hr(),
-                                 #     plotOutput(outputId = "raw_output", width = "100%", height = "100%")
-                                 # )),
+                                     plotOutput(outputId = "raw_output", width = "100%", height = "100%"))),
                         tabPanel(title = "Fit the Binding Model", value = "fit",
                                  wellPanel(
                                      h1(textOutput("Batch Analysis")),

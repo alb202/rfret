@@ -2,6 +2,7 @@
 library(ggplot2)
 library(shinyjs)
 library(gridExtra)
+library(grid)
 library(magrittr)
 library(readr)
 library(shinythemes)
@@ -19,7 +20,7 @@ source("graphics.R")
 
 server <- function(input, output, session) {
     values <- reactiveValues()
-
+    values$output_dir <- NULL
     input_files <- reactive({
         toggleState(id="find_dir", condition = (input$save == TRUE))
         if (is.null(input$data_file)) return(NULL)
@@ -40,6 +41,11 @@ server <- function(input, output, session) {
             # objectsLoaded[[length(objectsLoaded)+1]] <- df
             objectsLoaded[[ input$data_file$name[i] ]] <- df
         }
+        # print(class(objectsLoaded))
+        # print(str(objectsLoaded))
+        #
+        # print("input$data_file")
+        # print(input$data_file)
         values$file_index <- 1
         #values$number_of_files <- length(objectsLoaded)
         print("number of files: ")
@@ -54,17 +60,30 @@ server <- function(input, output, session) {
         print(names(objectsLoaded))
         print(class(objectsLoaded[1]))
         print(class(objectsLoaded[[1]]))
+
+        # If an output directory has not been set, make it null
+         print("output dir")
+         #print(values)
+         print(is.null(isolate(values$output_dir)))
+        # print(values[[1]])
+        # print(class(values))
+        # print(str(values))
+        print(isolate(values$output_dir))
+        # print(("output_dir" %in% values)==FALSE)
+        # print(input$save==FALSE)
+        # print(!("output_dir" %in% values) | input$save==FALSE)
+        if(input$save==FALSE)
+            isolate(values$output_dir <- NULL)
+
+        # Use the RFRET function to format the data frames
         ffd <- fret_format_data(input = objectsLoaded)
         return(ffd)
-        #return(objectsLoaded)
     })
-
-
 
     myData <- reactive({
         ffd <-input_files()
         if (is.null(ffd)) return(NULL)
-        ird <- fret_inspect_raw_data(raw_data = ffd, plot_format = "png")
+        ird <- fret_inspect_raw_data(raw_data = ffd, plot_format = "png", output_directory = isolate(values$output_dir))
         print(class(ird))
         #hideElement("splash_screen")
         #showElement("raw_output")
@@ -143,16 +162,23 @@ server <- function(input, output, session) {
         toggleState(id="hill_coefficient", condition = (input$algorithm == "hyperbolic"))})
 
     output$save_dir <- renderText({
-        volumes <- c("UserFolder"="/home/ab")
-        saveDir <- parseDirPath(volumes, input$find_dir)
-        return(saveDir)
+        #volumes <- c("UserFolder"="/home/ab")
+        #saveDir <- parseDirPath(volumes, input$find_dir)
+        return(values$save_dir)
     })
 
     observe({
-        volumes <- c("UserFolder"="/home/ab")
+        volumes <- c("Root"="/", "Home"="~/", "Working Directory"=getwd())
         shinyDirChoose(input, "find_dir", roots=volumes, session=session)
-        saveDir <- parseDirPath(volumes, input$find_dir)
-        print(saveDir)
+        save_dir <- parseDirPath(volumes, input$find_dir)
+        values$save_dir <- save_dir
+        timestamp <- strsplit(x = as.character(Sys.time()), split = " ")
+        output_dir <- paste(save_dir, "/", timestamp[[1]][1], "_", timestamp[[1]][2], sep = "")
+        if(!isTRUE(dir.exists(paths = output_dir)))
+            dir.create(path = output_dir)
+        isolate(values$output_dir <- output_dir)
+        print(values$save_dir)
+        print(isolate(values$output_dir))
     })
 
 observeEvent(process_all_listener(), {
@@ -192,58 +218,27 @@ observeEvent(process_all_listener(), {
             binding_model <- input$algorithm
             print("binding is not hill")
         }
-        figure <- ffd %>%
+        figures <- ffd %>%
             fret_average_replicates() %>%
-            fret_correct_signal(output_directory = "./corrected_data") %>%
+            fret_correct_signal(output_directory = isolate(values$output_dir)) %>%
             fit_binding_model(binding_model = binding_model,
                               probe_concentration = as.numeric(input$donor_concentration),
-                              output_directory = "./fit_results") %>%
+                              output_directory = isolate(values$output_dir)) %>%
             make_figure(probe_concentration = as.numeric(input$donor_concentration),
-                        output_directory = "./final_figures",
+                        output_directory = isolate(values$output_dir),
                         plot_format = "png")
 
-
-        #df_names <- names(myData())[values$dataset_decisions]
+        # print(class(figure))
+        # print(class(figure[[1]]))
+        # print(class(figure[1]))
+        # print(length(figure))
+        # #df_names <- names(myData())[values$dataset_decisions]
         #print(df_names)
         #names(df_list) <- df_names
         print(ffd)
         print(names(ffd))
-        #raw_data <- format_data(input = myData()[values$dataset_decisions], skip_lines = 0)
-        #print(raw_data)
-        #print(class(df_list))
-        #print(length(df_list))
-        #names(df_list) <- input$data_file$name[values$dataset_decisions]
-        #print(class(df_list))
-        #print(class(df_list[1]))
-        #print(class(df_list[1][1]))
-        #print(class(df_list[1][1][1]))
-        #print(names(df_list))
-        #raw_data <- format_data(input = df_list, skip_lines = 0)
-        #print(raw_data)
-        #atr <- average_technical_replicates(raw_data = raw_data)
-        #print(atr)
-        #cfs <- correct_fret_signal(atr)
-        #print(cfs)
-        #params <-  guess_parameters(cfs)
-        #print(params)
-        #print(input$algorithm)
-        #print(input$donor_concentration)
-        #print(input$hill_coefficient)
-        # if(input$algorithm == "hyperbolic"){
-        #     donor_concentration <- input$donor_concentration
-        #     hill_coefficient <- FALSE
-        # } else{
-        #     donor_concentration <- NULL
-        #     hill_coefficient <- input$hill_coefficient
-        # }
-        # fbm <- fit_binding_model(data_to_fit=cfs, model=input$algorithm, donor_concentration=donor_concentration, fit_Hill_coef=hill_coefficient)
-        # print("fbm$fit")
-        # print(fbm)
-        # print(names(fbm))
-        # print(cfs)
-        # print(names(cfs))
-        #fig <- make_figure(corrected_data = cfs, fit = fbm)
-        output$processed_output <- renderPlot({ figure })
+        figure_grid <- do.call(grid.arrange, c(figures, ncol=1, nrow=length(figures)))
+        output$processed_output <- renderPlot(height = 300*length(figures), { grid.draw(figure_grid) })
     })
     process_all_listener <- reactive({input$process_all})
 
