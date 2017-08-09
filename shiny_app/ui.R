@@ -16,8 +16,8 @@ ui <- fluidPage(
     #")),
     titlePanel(strong("RFret - Rapid FRET Analysis in R"), windowTitle = "RFret - Rapid FRET Analysis in R"),
     sidebarLayout(
-        sidebarPanel(
-            tabsetPanel(id="sidebar",
+        sidebarPanel(width = 4,
+            tabsetPanel(id="sidebar", type = "tabs",
                         tabPanel(title = "Datasets",
                                  value = "get",
                                  wellPanel(
@@ -73,7 +73,7 @@ ui <- fluidPage(
                         )
             )
         ),
-        mainPanel(
+        mainPanel(width = 8,
             tabsetPanel(id="main",
                         tabPanel(title = "Welcome", value = "welcome",
                                  wellPanel(

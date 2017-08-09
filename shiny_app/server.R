@@ -128,7 +128,7 @@ server <- function(input, output, session) {
         return(raw_data_grid)
     })
 
-    output$splash_screen <- renderPlot(once=TRUE, {
+    output$splash_screen <- renderPlot(bg = "transparent", once=TRUE, {
         return(splash_screen())
     })
 
