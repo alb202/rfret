@@ -24,47 +24,53 @@ server <- function(input, output, session) {
     input_files <- reactive({
         toggleState(id="find_dir", condition = (input$save == TRUE))
         if (is.null(input$data_file)) return(NULL)
-        objectsLoaded <- list()
+        # objectsLoaded <- list()
         disable(id="save")
-        for(i in 1:length(input$data_file$name)){
-            # print("add dataset1")
-            # print(input$data_file[i, 'datapath'])
-            # print(input$skip_rows)
-            df <- read_delim(file = input$data_file[i, 'datapath'],
-                             delim = ",",
-                            #delim = input$sep,
-                            skip = as.numeric(input$skip_rows)
-                            #quote = input$quote
-                             )
-            # df <- list(input$data_file$name[i], df)
-            # print("add dataset2")
-            # objectsLoaded[[length(objectsLoaded)+1]] <- df
-            objectsLoaded[[ input$data_file$name[i] ]] <- df
-        }
+        # for(i in 1:length(input$data_file$name)){
+        #     # print("add dataset1")
+        #     # print(input$data_file[i, 'datapath'])
+        #     # print(input$skip_rows)
+        #     df <- read_delim(file = input$data_file[i, 'datapath'],
+        #                      delim = ",",
+        #                      skip = as.numeric(input$skip_rows)
+        #                      )
+        #     # df <- list(input$data_file$name[i], df)
+        #     # print("add dataset2")
+        #     # objectsLoaded[[length(objectsLoaded)+1]] <- df
+        #     objectsLoaded[[ input$data_file$name[i] ]] <- df
+        # }
         # print(class(objectsLoaded))
         # print(str(objectsLoaded))
-        #
+        filenames <- input$data_file$datapath
+        names(filenames) <- input$data_file$name
+        print("show input data")
+        print(input$data_file)
+        print(filenames)
+        ffd <- fret_format_data(input = filenames, skip_lines = 4)
+        #print(abc)
         # print("input$data_file")
         # print(input$data_file)
         values$file_index <- 1
-        #values$number_of_files <- length(objectsLoaded)
+        values$number_of_files <- length(filenames)
         print("number of files: ")
-        #save_files = input$save
         print(values$number_of_files)
-        values$dataset_decisions <- rep(NA, length(objectsLoaded))
-        values$dataset_names <- sub(names(objectsLoaded),
-                                    pattern = ".csv",
-                                    replacement = "")
+        isolate(values$dataset_decisions <- rep(NA, values$number_of_files))
+        # values$dataset_names <- sort(sub(names(objectsLoaded),
+        #                                  pattern = ".csv",
+        #                                  replacement = ""))
+        print("dataset names")
+        print(unique(x = ffd$Experiment))
+        isolate(values$dataset_names <- sort(unique(x = ffd$Experiment)))
         #print(objectsLoaded[[1]])
-        print(length(objectsLoaded))
-        print(names(objectsLoaded))
-        print(class(objectsLoaded[1]))
-        print(class(objectsLoaded[[1]]))
+        # print(length(objectsLoaded))
+        # print(names(objectsLoaded))
+        # print(class(objectsLoaded[1]))
+        # print(class(objectsLoaded[[1]]))
 
         # If an output directory has not been set, make it null
-         print("output dir")
-         #print(values)
-         print(is.null(isolate(values$output_dir)))
+        print("output dir")
+        #print(values)
+        print(is.null(isolate(values$output_dir)))
         # print(values[[1]])
         # print(class(values))
         # print(str(values))
@@ -79,14 +85,16 @@ server <- function(input, output, session) {
                 dir.create(path = isolate(values$output_dir))
         }
         # Use the RFRET function to format the data frames
-        ffd <- fret_format_data(input = objectsLoaded)
+        #ffd <- fret_format_data(input = objectsLoaded)
         return(ffd)
     })
 
     myData <- reactive({
         ffd <-input_files()
         if (is.null(ffd)) return(NULL)
-        ird <- fret_inspect_raw_data(raw_data = ffd, plot_format = "png", output_directory = isolate(values$output_dir))
+        ird <- fret_inspect_raw_data(raw_data = ffd,
+                                     plot_format = "png",
+                                     output_directory = isolate(values$output_dir))
         print(class(ird))
         #hideElement("splash_screen")
         #showElement("raw_output")
@@ -207,10 +215,12 @@ observeEvent(process_all_listener(), {
         print(values$dataset_decisions)
         print(values$dataset_names[values$dataset_decisions])
         print("ffd 1")
+        print(isolate(values$dataset_names)[isolate(values$dataset_decisions)])
         print(ffd)
-        print(input$data_file[,"name"][values$dataset_decisions])
+        #print(input$data_file[,"name"][values$dataset_decisions])
         #ffd <- ffd[ffd$Experiment %in% values$dataset_names[values$dataset_decisions], ]
-        ffd <- ffd[ffd$Experiment %in% input$data_file[,"name"][values$dataset_decisions], ]
+        #ffd <- ffd[ffd$Experiment %in% input$data_file[,"name"][values$dataset_decisions], ]
+        ffd <- ffd[ffd$Experiment %in% isolate(values$dataset_names)[values$dataset_decisions], ]
         print("ffd 2")
         print(ffd)
         print(class(input$donor_concentration))
