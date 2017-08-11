@@ -4,9 +4,11 @@ library(shinyjs)
 ui <- fluidPage(
     shinyjs::useShinyjs(),
     tags$head(
-        tags$link(rel = "stylesheet", type = "text/css", href = "yeti.css")
+        tags$link(rel = "stylesheet", type = "text/css", href = "yeti.css")),
+    #tags$head(tags$style(".rightAlign{float:right;padding:0;}")),
+
         #tags$style(HTML("@import url('//fonts.googleapis.com/css?family=Lobster|Cabin:400,700');")
-    ),
+    #),
     #tags$style(HTML("
     #.tabbable > .nav > li > a                  {background-color: aqua;  color:black}
     #.tabbable > .nav > li[class=active]    > a {background-color: black; color:white}")),
@@ -16,7 +18,7 @@ ui <- fluidPage(
     #")),
     titlePanel(strong("RFret - Rapid FRET Analysis in R"), windowTitle = "RFret - Rapid FRET Analysis in R"),
     sidebarLayout(
-        sidebarPanel(width = 4,
+        sidebarPanel(width = 3,
             tabsetPanel(id="sidebar", type = "tabs",
                         tabPanel(title = "Datasets",
                                  value = "get",
@@ -67,13 +69,13 @@ ui <- fluidPage(
                                                              value = NULL)
                                                 #textOutput("Enter a donor concentration or change the algorithm!")
                                          )))),
-                        tabPanel(title = "Help", value = "help",
+                        tabPanel(title = "?", value = "help",
                                  tags$hr(),
                                  h5("Help information")
                         )
             )
         ),
-        mainPanel(width = 8,
+        mainPanel(width = 9,
             tabsetPanel(id="main",
                         tabPanel(title = "Welcome", value = "welcome",
                                  wellPanel(
@@ -83,32 +85,144 @@ ui <- fluidPage(
                                  )),
                         tabPanel(title = "Inspect Raw Data", value = "inspect",
                                  wellPanel(
+                                     fluidRow(column(12, style = "background-color:orange;padding:0;", div(style = "margin: 0"), h3(textOutput("filename")))),
                                      fluidRow(
-                                         tags$html(
-                                             tags$table(width="100%", cellspacing=0, cellpadding=0, bordercolor="none", border=0,  height="5%",
-                                                        #tags$style(type='text/css','#table {background-color: transparent; border-color: red}'),
-                                                        tags$colgroup(
-                                                            tags$col(width="40%"),
-                                                            tags$col(width="10%"),
-                                                            tags$col(width="10%"),
-                                                            tags$col(width="10%"),
-                                                            tags$col(width="10%"),
-                                                            tags$col(width="10%"),
-                                                            tags$col(width="10%")
-                                                        ),
-                                                        tags$tr(bordercolor="red",
-                                                            tags$td(colspan=7, valign="bottom", height="50%",
-                                                                    hidden(plotOutput("decision_indicator", height = "5%")))),
-                                                        tags$tr(
-                                                            tags$td(valign="top", h3(textOutput("filename"))),
-                                                            tags$td(valign="bottom", actionButton(inputId = "accept", label="Accept")),
-                                                            tags$td(valign="bottom", actionButton(inputId = "reject", label="Reject")),
-                                                            tags$td(""),
-                                                            tags$td(valign="bottom", disabled(actionButton(inputId = "previous", label ="Previous"))),
-                                                            tags$td(valign="bottom", disabled(actionButton(inputId = "next1", label ="Next"))),
-                                                            tags$td("")
-                                                        )))),
-                                     plotOutput(outputId = "raw_output", width = "100%", height = "100%"))),
+                                         column(2,  #style = "display:inline-block;padding:0;background-color:green;",
+                                                fluidRow(
+                                                    column(6, align = "right", style = "background-color:yellow;padding:0;",
+                                                           div(style = ""), actionButton(inputId = "accept", label="Accept"), style="float:left;padding:0;"),
+                                                    column(6, align = "left", style = "background-color:green;padding:0;",
+                                                           div(style = ""), actionButton(inputId = "reject", label="Reject"), style="float:right;padding:0;")
+                                                ), # display:inline-block;padding:0;float:right;
+                                                fluidRow(
+
+                                                    column(6, align = "right", style = "background-color:black;padding:0;",
+                                                           div(style = ""), disabled(actionButton(align = "left", inputId = "previous", label ="Prev")), style="float:left;padding:0;"),
+                                                    column(6, align = "left", style = "background-color:gray;padding:0;",
+                                                           div(style = ""), disabled(actionButton(align = "right", inputId = "next1", label ="Next")), style="float:right;padding:0;")
+                                                ),
+                                                fluidRow(height = "100%",
+                                                    column(width = 12, style = "background-color:red;padding:0;", align = "center",
+                                                           div(style = "height:auto", hidden(plotOutput(outputId = "decision_indicator"))))#, style="float:center", width = "100%", height = "100%" # click = clickOpts(id="plot_click"),
+                                                )),
+                                         column(9, style = "background-color:blue;padding:0;",
+                                                div(style = ""), plotOutput(outputId = "raw_output", width = "100%", height = "100%"))
+                                     ))),
+
+                        #                            ),
+                        #                        #tags$br(),
+                        #                        tags$td(
+                        #                            ,
+                        #                            ),
+
+                        #              fluidRow(
+                        #                  tags$html(
+                        #                      tags$style(".wrapper {display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 2px; grid-auto-rows: minmax(10px, auto);}",
+                        #                                 ".top {grid-column: 1 / 3; grid-row: 1;}",
+                        #                                 ".accept { grid-column: 2 / 4; grid-row: 1 / 3;}",
+                        #                                 ".reject {grid-column: 1; grid-row: 2 / 5;}",
+                        #                                 ".previous {grid-column: 3; grid-row: 3;}",
+                        #                                 ".next {grid-column: 2; grid-row: 4;}",
+                        #                                 ".figure {grid-column: 3; grid-row: 4;}"),
+                        #                      tags$div(class="wrapper",
+                        #                               tags$div(class="top", "top"),
+                        #                               tags$div(class="accept", "accept"),
+                        #                               tags$div(class="reject", "reject"),
+                        #                               tags$div(class="previous" ,"previous"),
+                        #                               tags$div(class="next" ,"next"),
+                        #                               tags$div(class="indicator", "indicator"),
+                        #                               tags$div(class="figure", "figure")
+                        #                               ))
+                        #              ))),
+                        #
+                        # #
+                        #                      tags$table(cellspacing=0, padding=0, cellpadding=0, bordercolor="black",width="95%",  #border=1,
+                        #                                 tags$style(type='text/css', "table tr td {border: 1px solid black; border-collapse: collapse; border-bottom: 1px solid black; background-color: none; bordercolor: #000000}"),
+                        #                                 #tags$style(style=table-layout="auto", margin=0,
+                        #                         tags$colgroup(
+                        #                             tags$col(width="10%"),
+                        #                             tags$col(width="90%")),
+                        #                         tags$tr(
+                        #                             tags$td(colspan = 2, "top row for name of file")),
+                        #                         tags$tr(
+                        #                             tags$td(colspan = 1, valign="top", align="center", "column for decisions"),
+                        #                             tags$td(colspan = 1, valign="top", align="center", "column for figure display")
+                        #                             )
+                        #                         )
+                        #                     )
+                        #              )
+                        #          )
+                        # ),
+
+                                         #                        tags$td(colspan = 1, align="left", valign="bottom", ))
+                                         #     tags$td(colspan = 1, ""),
+                                         #     tags$td(colspan = 1, align="right", valign="bottom", ),
+                                         #     tags$td(colspan = 1, align="left", ))#,
+                                         # tags$td(colspan = 1, ""))
+
+
+                                             #tags$title(textOutput("filename")),
+                                             # tags$table(cellspacing=0, cellpadding=0, bordercolor="black", border=0,width="95%",
+                                             #            #tags$style(type='text/css','#table {background-color: transparent; border-color: red}'),
+                                             #            tags$colgroup(
+                                             #                # tags$col(width="5%"),
+                                             #                # tags$col(width="5%"),
+                                             #                # tags$col(width="10%"),
+                                             #                # tags$col(width="10%"),
+                                             #                # tags$col(width="10%"),
+                                             #                # tags$col(width="10%"),
+                                             #                # tags$col(width="10%"),
+                                             #                # tags$col(width="10%"),
+                                             #                # tags$col(width="10%"),
+                                             #                # tags$col(width="10%"),
+                                             #                # tags$col(width="10%"),
+                                             #                tags$col(width="8%"),
+                                             #                tags$col(width="92%")
+                                             #                # tags$col(),
+                                             #                # tags$col(),
+                                             #                # tags$col(),
+                                             #                # tags$col(),
+                                             #                # tags$col(),
+                                             #                # tags$col(),
+                                             #                # tags$col(),
+                                             #                # tags$col()
+                                             #            ),
+                                             #
+                                             #            # tags$tr(cellspacing=0, cellpadding=0,
+                                             #            #     tags$td(colspan = 4, valign="top", h3(textOutput("filename")))),
+                                             #            #     #tags$td(colspan = 1, align="right", valign="bottom"),
+                                             #                #tags$td(colspan = 1, align="left", valign="bottom", ))
+                                             #                #tags$td(colspan = 1, ""),
+                                             #                #tags$td(colspan = 1, align="right", valign="bottom", ),
+                                             #                #tags$td(colspan = 1, align="left", ))#,
+                                             #                #tags$td(colspan = 1, ""))
+                                             #
+                                             #            tags$tr(cellspacing=0, cellpadding=0,
+                                             #                tags$td(colspan=1, valign="top",
+                                             #                        tags$td(
+                                             #                            actionButton(inputId = "accept", label="Accept"),
+                                             #                            actionButton(inputId = "reject", label="Reject")),
+                                             #                        #tags$br(),
+                                             #                        tags$td(
+                                             #                            disabled(actionButton(inputId = "previous", label ="<--")),
+                                             #                            disabled(actionButton(inputId = "next1", label ="-->"))),
+                                             #                        tags$td(
+                                             #                            tags$td(align="center",
+                                             #                                    valign="top",
+                                             #                                    cellspacing=0,
+                                             #                                    cellpadding=0,
+                                             #                                    height = "100%",
+                                             #                                    hidden(plotOutput("decision_indicator"))))),
+                                             #                                                     #height = "5%",
+                                             #                                                     #click = clickOpts(id="plot_click",
+                                             #
+                                             #                tags$td(colspan=1, valign="top", align="left",
+                                             #                        plotOutput(outputId = "raw_output", width = "100%", height = "100%")))
+                                             #                                   #
+                                             #                                   #)))
+                                             # )
+
+                                         #)))),
                         tabPanel(title = "Fit the Binding Model", value = "fit",
                                  wellPanel(
                                      h1(textOutput("Batch Analysis")),

@@ -43,3 +43,33 @@ decision_indicator <- function(decision_index, position_index){
     return(p)
 }
 
+make_indicator <- function(decision=NA, text_label=NULL){
+    line_color <- "black"
+    if(isTRUE(decision)){
+        fill_color <- "green"
+        }
+    if(!isTRUE(decision) & !is.na(decision)){
+        fill_color <- "red"
+        }
+    if(is.na(decision)){
+        fill_color <- "gray"
+        }
+    center <- c(1,1)
+   diameter <- 1
+   npoints <- 100
+   start <- 0
+   end <- 2
+   filled <- TRUE
+    tt <- seq(start*pi, end*pi, length.out=npoints)
+    df <- data.frame(
+        x = center[1] + diameter / 2 * cos(tt),
+        y = center[2] + diameter / 2 * sin(tt)
+    )
+
+    p <- ggplot() + theme_void() +
+        geom_polygon(data=df, aes(x,y), color=line_color, fill=fill_color)
+
+    if(!is.null(text_label))
+        p <- p + annotate(geom = "text", x = 1, y = 1, label = as.character(text_label), size=6)
+    return(p)
+}

@@ -132,8 +132,29 @@ server <- function(input, output, session) {
         return(splash_screen())
     })
 
-    output$decision_indicator <- renderPlot(once=FALSE, height = 20, bg = "transparent", {
-        return(decision_indicator(decision_index = values$dataset_decisions, position_index = values$file_index))
+    output$decision_indicator <- renderPlot(once=FALSE, width=50, height="auto", bg = "transparent", {      #width=50,
+        #return(decision_indicator(decision_index = values$dataset_decisions, position_index = values$file_index))
+        #if(is.null(input$data_file)) return(NULL)
+        print("decision indicator")
+        print(length(isolate(values$dataset_decisions))*35)
+        print(isolate(values$dataset_decisions))
+        print(1:length(isolate(values$dataset_decisions)))
+        print(class(isolate(values$dataset_decisions)))
+        print(class(1:length(isolate(values$dataset_decisions))))
+        p <- do.call(grid.arrange,
+                     c(mapply(FUN = make_indicator,
+                              as.list(values$dataset_decisions),
+                              as.list(1:length(values$dataset_decisions)),
+                              SIMPLIFY = FALSE,
+                              USE.NAMES = FALSE),
+                       ncol = 1))
+        return(p)
+        #return(decision_indicator(decision_index = values$dataset_decisions, position_index = values$file_index))
+    })
+
+    observeEvent(input$plot_click,{
+        print(isolate(input$plot_click$x))
+        print(isolate(input$plot_click$y))
     })
 
     observeEvent(input$accept, label = "Accept", {
@@ -190,6 +211,10 @@ server <- function(input, output, session) {
         isolate(values$output_dir <- output_dir)
         print(isolate(values$save_dir))
         print(isolate(values$output_dir))
+        #output$dots <- renderImage(deleteFile = FALSE, {src = list("accept.png", contentType = 'image/png')})
+        #output$dots <- renderImage({list(src = "red-dot.svg",
+        #                                           width = 30, height = 30, contentType = 'image/svg',alt = "Accept")}, deleteFile = FALSE)
+        #output$dots <- renderImage({ grid.arrange("red-dot.svg")})
     })
 
 observeEvent(process_all_listener(), {
@@ -251,7 +276,7 @@ observeEvent(process_all_listener(), {
         print(ffd)
         print(names(ffd))
         figure_grid <- do.call(grid.arrange, c(figures, ncol=1, nrow=length(figures)))
-        output$processed_output <- renderPlot(height = 300*length(figures), { grid.draw(figure_grid) })
+        output$processed_output <- renderImage(height = 300*length(figures), { grid.draw(figure_grid) })
     })
     process_all_listener <- reactive({input$process_all})
 
