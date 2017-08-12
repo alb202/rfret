@@ -132,23 +132,39 @@ server <- function(input, output, session) {
         return(splash_screen())
     })
 
-    output$decision_indicator <- renderPlot(once=FALSE, width=50, height="auto", bg = "transparent", {      #width=50,
+    #output$decision_indicator <- renderPlot(once=FALSE, width=50, height=(length(isolate(values$dataset_decisions))*35), bg = "transparent", {      #width=50,
         #return(decision_indicator(decision_index = values$dataset_decisions, position_index = values$file_index))
         #if(is.null(input$data_file)) return(NULL)
+    observeEvent(decision_listener(), {
+        if(is.null(values$file_index)) return(NULL)
         print("decision indicator")
-        print(length(isolate(values$dataset_decisions))*35)
-        print(isolate(values$dataset_decisions))
-        print(1:length(isolate(values$dataset_decisions)))
-        print(class(isolate(values$dataset_decisions)))
-        print(class(1:length(isolate(values$dataset_decisions))))
+        dataset_decisions <- isolate(values$dataset_decisions)
+        number_of_datasets <- length(dataset_decisions)
+        #print(number_of_datasets*35)
+        #print(dataset_decisions)
+        #print(1:number_of_datasets)
+        #print(class(isolate(values$dataset_decisions)))
+        #print(class(1:length(isolate(values$dataset_decisions))))
+        selected <- rep(FALSE, number_of_datasets)
+        #print(isolate(values$file_index))
+        selected[isolate(values$file_index)] <- TRUE
+        #print(selected)
         p <- do.call(grid.arrange,
                      c(mapply(FUN = make_indicator,
-                              as.list(values$dataset_decisions),
-                              as.list(1:length(values$dataset_decisions)),
+                              dataset_decisions,
+                              1:number_of_datasets,
+                              selected,
                               SIMPLIFY = FALSE,
                               USE.NAMES = FALSE),
                        ncol = 1))
-        return(p)
+        #print(p)
+        output$decision_indicator <- renderPlot(
+            once=FALSE,
+            width=40,
+            height=(length(isolate(values$dataset_decisions))*35),
+            bg = "transparent",
+            {grid.draw(p)}
+            )
         #return(decision_indicator(decision_index = values$dataset_decisions, position_index = values$file_index))
     })
 
@@ -276,9 +292,11 @@ observeEvent(process_all_listener(), {
         print(ffd)
         print(names(ffd))
         figure_grid <- do.call(grid.arrange, c(figures, ncol=1, nrow=length(figures)))
-        output$processed_output <- renderImage(height = 300*length(figures), { grid.draw(figure_grid) })
+        output$processed_output <- renderPlot(height = 300*length(figures), { grid.draw(figure_grid) })
     })
     process_all_listener <- reactive({input$process_all})
+
+    decision_listener <- reactive({list(values$dataset_decisions, values$file_index)})
 
     prelim_listener <- reactive({
         list(input$next1, input$previous, input$accept, input$reject, input$accept_all, input$accept_all_subsequent, input$data_file)

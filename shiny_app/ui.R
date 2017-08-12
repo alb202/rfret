@@ -20,12 +20,12 @@ ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(width = 3,
             tabsetPanel(id="sidebar", type = "tabs",
-                        tabPanel(title = "Datasets",
+                        tabPanel(title = "Data",
                                  value = "get",
                                  wellPanel(
                                      fluidRow(
                                          column(10, fileInput('data_file',
-                                                              'Choose 1 or more FRET data files:',
+                                                              'Select FRET data file(s):',
                                                               accept=c('text/csv',
                                                                        'text/comma-separated-values',
                                                                        'text/plain',
@@ -38,29 +38,32 @@ ui <- fluidPage(
                                                                  min = 0)),
 
                                          column(10, tags$hr()),
-                                         column(10, checkboxInput("save", " Save Files to local folder ...", value = FALSE)),
-                                         column(10, h5(textOutput("save_dir"))),
+                                         column(10, checkboxInput("save", " Save Files to folder ...", value = FALSE)),
+                                         #column(10, h5(textOutput("save_dir"))),
                                          column(10, shinyFiles::shinyDirButton(id = "find_dir",
-                                                                               label = "Select the save directory",
-                                                                               title = "Select directory ..."))))),
-                        tabPanel(title = "Algorithm", value = "advanced",
+                                                                               label = "Select folder ...",
+                                                                               title = "Select folder ..."))))),
+                        tabPanel(title = "Filter", value = "advanced",
                                  wellPanel(
                                      fluidRow(
-                                         column(width = 5,
+                                         column(width = 12,
                                                 disabled(actionButton(inputId = "accept_all",
-                                                                      label="Accept All",
-                                                                      width = 100))),
-                                         column(width = 5,
+                                                                      icon = icon("check", lib = "glyphicon"),
+                                                                      label="Accept All"
+                                                                      ))),
+                                         fluidRow(div(style = "height:5px;")),
+                                         column(width = 12,
                                                 disabled(actionButton(inputId = "process_all",
-                                                                      label="Process the files ...",
-                                                                      width = 150))),
+                                                                      icon = icon("play", lib = "glyphicon"),
+                                                                      label="Process selected files..."
+                                                                      ))),
                                          column(width = 10,tags$hr()),
-                                         column(10,
+                                         column(11,
                                                 radioButtons('algorithm',
                                                              'Select the algorithm for fitting the binding model:',
                                                              c('Hyperbolic'='hyperbolic',
                                                                'Quadratic'="quadratic")),
-                                                tags$hr(),
+                                                #tags$hr(),
                                                 checkboxInput("hill_coefficient",
                                                               "Fit the Hill Coefficient (optional if algorithm is quadratic)",
                                                               value = FALSE),
@@ -76,38 +79,61 @@ ui <- fluidPage(
             )
         ),
         mainPanel(width = 9,
-            tabsetPanel(id="main",
-                        tabPanel(title = "Welcome", value = "welcome",
-                                 wellPanel(
-                                     fluidRow(column(width=12, offset=0)),
-                                     plotOutput("splash_screen"),
-                                     fluidRow(column(width=12, offset=0))
-                                 )),
-                        tabPanel(title = "Inspect Raw Data", value = "inspect",
-                                 wellPanel(
-                                     fluidRow(column(12, style = "background-color:orange;padding:0;", div(style = "margin: 0"), h3(textOutput("filename")))),
-                                     fluidRow(
-                                         column(2,  #style = "display:inline-block;padding:0;background-color:green;",
-                                                fluidRow(
-                                                    column(6, align = "right", style = "background-color:yellow;padding:0;",
-                                                           div(style = ""), actionButton(inputId = "accept", label="Accept"), style="float:left;padding:0;"),
-                                                    column(6, align = "left", style = "background-color:green;padding:0;",
-                                                           div(style = ""), actionButton(inputId = "reject", label="Reject"), style="float:right;padding:0;")
-                                                ), # display:inline-block;padding:0;float:right;
-                                                fluidRow(
+                  tabsetPanel(id="main",
+                              tabPanel(title = "Welcome", value = "welcome",
+                                       wellPanel(
+                                           fluidRow(column(width=12, offset=0)),
+                                           plotOutput("splash_screen"),
+                                           fluidRow(column(width=12, offset=0))
+                                       )),
+                              tabPanel(title = "Inspect Raw Data", value = "inspect",
+                                       #fluidRow(
+                                       wellPanel(
+                                           fluidRow(column(width=12, offset=0)),
+                                           column(1,
+                                                  fluidRow(actionButton(inputId = "accept", label = "", icon = icon("ok", lib = "glyphicon"))),
+                                                  fluidRow(actionButton(inputId = "reject", label = "", icon = icon("remove", lib = "glyphicon"))),
+                                                  fluidRow(div(style = "height:5px;")),
+                                                  fluidRow(disabled(actionButton(inputId = "previous", label ="", icon = icon("arrow-up", lib = "glyphicon")))),
+                                                  fluidRow(disabled(actionButton(inputId = "next1", label ="", icon = icon("arrow-down", lib = "glyphicon")))),
+                                                  fluidRow(div(style = "height:5px;")),
+                                                  fluidRow(hidden(plotOutput(inline=TRUE, outputId = "decision_indicator")))
+                                           ),
+                                           column(11,
+                                                  plotOutput(outputId = "raw_output", width = "100%", height = "100%")),
+                                           fluidRow(column(width=12, offset=0))
+                                       )),
+                                       #)),
+                                #       wellPanel(
+                                #           fluidRow(plotOutput(outputId = "raw_output", width = "100%", height = "100%")))
 
-                                                    column(6, align = "right", style = "background-color:black;padding:0;",
-                                                           div(style = ""), disabled(actionButton(align = "left", inputId = "previous", label ="Prev")), style="float:left;padding:0;"),
-                                                    column(6, align = "left", style = "background-color:gray;padding:0;",
-                                                           div(style = ""), disabled(actionButton(align = "right", inputId = "next1", label ="Next")), style="float:right;padding:0;")
-                                                ),
-                                                fluidRow(height = "100%",
-                                                    column(width = 12, style = "background-color:red;padding:0;", align = "center",
-                                                           div(style = "height:auto", hidden(plotOutput(outputId = "decision_indicator"))))#, style="float:center", width = "100%", height = "100%" # click = clickOpts(id="plot_click"),
-                                                )),
-                                         column(9, style = "background-color:blue;padding:0;",
-                                                div(style = ""), plotOutput(outputId = "raw_output", width = "100%", height = "100%"))
-                                     ))),
+                              #          wellPanel(
+                              #              #fluidRow(column(12, style = "background-color:orange;padding:0;", div(style = "margin: 0"), h3(textOutput("filename")))),
+                              #              column(2,  #style = "display:inline-block;padding:0;background-color:green;",
+                              #                     column(6,
+                              #                            fluidRow(
+                              #                                column(12, align = "center", style = "background-color:none;padding:0;",
+                              #                                       div(style = ""), actionButton(inputId = "accept", label = "", icon = icon("ok", lib = "glyphicon")),
+                              #                                       style="float:rightt;padding:0;")),
+                              #                            fluidRow(
+                              #                                column(12, align = "center", style = "background-color:none;padding:0;",
+                              #                                       div(style = "height:100%", hidden(plotOutput(inline=TRUE, outputId = "decision_indicator")))))),
+                              #                     column(6,
+                              #                            fluidRow(
+                              #                                column(12, align = "center", style = "background-color:none;padding:0;",
+                              #                                       div(style = ""), actionButton(inputId = "reject", label = "", icon = icon("remove", lib = "glyphicon")),
+                              #                                       style="float:left;padding:0;")),
+                              #                            fluidRow(
+                              #                                column(12, align = "right", style = "background-color:none;padding:0;",
+                              #                                       div(style = ""), disabled(actionButton(inputId = "previous", label ="", icon = icon("arrow-up", lib = "glyphicon"))),
+                              #                                       style="float:center;padding:0;")),
+                              #                            fluidRow(
+                              #                                column(12, align = "right", style = "background-color:none;padding:0;",
+                              #                                       div(style = ""), disabled(actionButton(inputId = "next1", label ="", icon = icon("arrow-down", lib = "glyphicon"))),
+                              #                                       style="float:center;padding:0;")))),
+                              #              column(9, style = "background-color:none;padding:0;",
+                              #                     div(style = ""), plotOutput(outputId = "raw_output", width = "100%", height = "100%")))
+                              # ),
 
                         #                            ),
                         #                        #tags$br(),

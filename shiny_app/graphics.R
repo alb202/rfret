@@ -39,37 +39,39 @@ decision_indicator <- function(decision_index, position_index){
         theme_void() +
         theme(legend.position="none") +
         geom_rect(mapping = aes(xmin=position_index-.4-(.1/decision_length), xmax=position_index+.4+(.1/decision_length), ymin=0.5, ymax=1.5, fill=NULL), color="black", alpha = 0) +
-        scale_fill_manual(values = c("g"="green", "r"="red", "y"="grey"))
+        scale_fill_manual(values = c("g"="green", "r"="red", "y"="#e7e7e7"))
     return(p)
 }
 
-make_indicator <- function(decision=NA, text_label=NULL){
+make_indicator <- function(decision=NA, text_label=NULL, selected=NULL){
     line_color <- "black"
     if(isTRUE(decision)){
-        fill_color <- "green"
+        fill_color <- "#61af3d"
         }
     if(!isTRUE(decision) & !is.na(decision)){
-        fill_color <- "red"
+        fill_color <- "#ff3535"
         }
     if(is.na(decision)){
-        fill_color <- "gray"
+        fill_color <- "#e7e7e7"
         }
     center <- c(1,1)
    diameter <- 1
-   npoints <- 100
+   npoints <- 5000
    start <- 0
    end <- 2
+   line_size <- .05
+   if(isTRUE(selected)) line_size <- 1
    filled <- TRUE
-    tt <- seq(start*pi, end*pi, length.out=npoints)
-    df <- data.frame(
-        x = center[1] + diameter / 2 * cos(tt),
-        y = center[2] + diameter / 2 * sin(tt)
-    )
+   tt <- seq(start*pi, end*pi, length.out=npoints)
+   df <- data.frame(
+       x = center[1] + diameter / 2 * cos(tt),
+       y = center[2] + diameter / 2 * sin(tt)
+   )
 
     p <- ggplot() + theme_void() +
-        geom_polygon(data=df, aes(x,y), color=line_color, fill=fill_color)
+        geom_polygon(data=df, aes(x,y), color=line_color, fill=fill_color, size=line_size)
 
     if(!is.null(text_label))
-        p <- p + annotate(geom = "text", x = 1, y = 1, label = as.character(text_label), size=6)
+        p <- p + annotate(geom = "text", x = 1, y = 1, label = as.character(text_label), size=5)
     return(p)
 }
