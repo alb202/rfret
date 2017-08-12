@@ -61,12 +61,7 @@ fret_format_data <- function(input = NULL, skip_lines = 0) {
             stop("File not found: ", input[file.exists(input) == FALSE])
         } else {
             raw_data <- lapply(input, readr::read_csv, skip = skip_lines)
-            if(is.null(names(input))){
-                raw_data_names <- input
-            } else{
-                raw_data_names <- names(input)
-            }
-            names(raw_data) <- sub(raw_data_names,
+            names(raw_data) <- sub(input,
                                    pattern = ".csv",
                                    replacement = "")
         }
