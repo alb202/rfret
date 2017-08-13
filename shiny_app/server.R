@@ -16,6 +16,7 @@ source("../R/fit_binding_model.R")
 source("../R/make_figure.R")
 source("../R/guess_parameters.R")
 source("../R/equations.R")
+source("../R/utilities.R")
 source("graphics.R")
 
 server <- function(input, output, session) {
@@ -103,6 +104,7 @@ server <- function(input, output, session) {
         updateTabsetPanel(session = session, inputId = "sidebar", selected = "advanced")
         updateTabsetPanel(session = session, inputId = "main", selected = "inspect")
         showElement(id = "decision_indicator")
+        showElement(id = "file_selector")
         #enable(id = "next1")
         #enable(id = "previous")
         #enable(id = "accept")
@@ -153,15 +155,15 @@ server <- function(input, output, session) {
                      c(mapply(FUN = make_indicator,
                               dataset_decisions,
                               1:number_of_datasets,
-                              selected,
+                              #selected,
                               SIMPLIFY = FALSE,
                               USE.NAMES = FALSE),
                        ncol = 1))
         #print(p)
         output$decision_indicator <- renderPlot(
             once=FALSE,
-            width=40,
-            height=(length(isolate(values$dataset_decisions))*35),
+            width=30,
+            height=(length(isolate(values$dataset_decisions))*30),
             bg = "transparent",
             {grid.draw(p)}
             )
@@ -213,6 +215,21 @@ server <- function(input, output, session) {
         #volumes <- c("UserFolder"="/home/ab")
         #saveDir <- parseDirPath(volumes, input$find_dir)
         return(values$save_dir)
+    })
+
+    observeEvent(input$file_index, {
+        print(input$file_index)
+        values$file_index <- as.numeric(input$file_index)
+    })
+
+    output$file_selector <- renderUI({
+        options <- 1:values$number_of_files
+        radioButtons(width = "10%",
+                     inputId = 'file_index',
+                     label = NULL,
+                     choiceValues = options,
+                     choiceNames = rep("", values$number_of_files),
+                     selected = values$file_index)
     })
 
     observe({
@@ -334,6 +351,5 @@ observeEvent(process_all_listener(), {
         }
         showElement(id = "decision_image")
     })
-    #shinyApp(ui, server)
 }
-## Accept and reject icons are from: http://www.iconsdb.com/green-icons/checked-checkbox-icon.html, http://www.iconsdb.com/red-icons/x-mark-4-icon.html
+## Icons from Font-Awesome (http://fontawesome.io/icons/) and Bootstrap/Glyphicon (https://getbootstrap.com/docs/3.3/components/#glyphicons)

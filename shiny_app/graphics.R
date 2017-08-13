@@ -49,7 +49,7 @@ make_indicator <- function(decision=NA, text_label=NULL, selected=NULL){
         fill_color <- "#61af3d"
         }
     if(!isTRUE(decision) & !is.na(decision)){
-        fill_color <- "#ff3535"
+        fill_color <- "#e50000"
         }
     if(is.na(decision)){
         fill_color <- "#e7e7e7"
