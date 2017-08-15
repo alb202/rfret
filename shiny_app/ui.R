@@ -28,7 +28,7 @@ ui <- fluidPage(
 
                                                   column(10, tags$hr()),
                                                   column(10, checkboxInput("save", " Save Files to folder ...", value = FALSE)),
-                                                  #column(10, h5(textOutput("save_dir"))),
+                                                  column(10, h5(textOutput("save_dir"))),
                                                   column(10, shinyFiles::shinyDirButton(id = "find_dir",
                                                                                         label = "Select folder ...",
                                                                                         title = "Select folder ..."))))),

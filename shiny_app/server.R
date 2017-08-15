@@ -146,7 +146,9 @@ server <- function(input, output, session) {
         return(raw_data_grid)
     })
 
-    output$splash_screen <- renderPlot(bg = "transparent", once=TRUE, {
+    output$splash_screen <- renderPlot(bg = "transparent",
+                                       #once=TRUE,
+                                       {
         return(splash_screen())
     })
 
@@ -177,7 +179,7 @@ server <- function(input, output, session) {
                               USE.NAMES = FALSE),
                        ncol = 1))
         output$decision_indicator <- renderPlot(
-            once=FALSE,
+            #once=FALSE,
             width=30,
             height=(length(isolate(values$dataset_decisions))*30),
             bg = "transparent",
@@ -243,7 +245,7 @@ server <- function(input, output, session) {
     })
 
     observe({
-        volumes <- c("Root"="/", "Home"="~/", "Working Directory"=getwd())
+        volumes <- c("Home"="~/", "Root"="/")
         shinyDirChoose(input, "find_dir", roots=volumes, session=session)
         save_dir <- parseDirPath(volumes, input$find_dir)
         values$save_dir <- save_dir
