@@ -48,6 +48,7 @@ server <- function(input, output, session) {
         print(input$data_file)
         print(filenames)
         ffd <- fret_format_data(input = filenames, skip_lines = 4)
+        values$ffd <- ffd
         #print(abc)
         # print("input$data_file")
         # print(input$data_file)
@@ -87,24 +88,37 @@ server <- function(input, output, session) {
         }
         # Use the RFRET function to format the data frames
         #ffd <- fret_format_data(input = objectsLoaded)
-        return(ffd)
-    })
 
-    myData <- reactive({
-        ffd <-input_files()
-        if (is.null(ffd)) return(NULL)
-        ird <- fret_inspect_raw_data(raw_data = ffd,
-                                     plot_format = "png",
-                                     output_directory = isolate(values$output_dir))
-        print("myData")
-        #hideElement("splash_screen")
-        #showElement("raw_output")
-        #showElement("accept")
-        values$number_of_files <- length(ird)
         updateTabsetPanel(session = session, inputId = "sidebar", selected = "advanced")
         updateTabsetPanel(session = session, inputId = "main", selected = "inspect")
         showElement(id = "decision_indicator")
         showElement(id = "file_selector")
+        if (is.null(ffd)) return(NULL)
+        ird <- fret_inspect_raw_data(raw_data = ffd,
+                                     plot_format = "png",
+                                     output_directory = isolate(values$output_dir))
+
+        #values$number_of_files <- length(ird)
+        return(ird)
+        # return(ffd)
+    })
+
+    myData <- reactive({
+        # ffd <-input_files()
+        # if (is.null(ffd)) return(NULL)
+        # ird <- fret_inspect_raw_data(raw_data = ffd,
+        #                              plot_format = "png",
+        #                              output_directory = isolate(values$output_dir))
+        ird <- input_files()
+        print("myData")
+        #hideElement("splash_screen")
+        #showElement("raw_output")
+        #showElement("accept")
+        # values$number_of_files <- length(ird)
+        # updateTabsetPanel(session = session, inputId = "sidebar", selected = "advanced")
+        # updateTabsetPanel(session = session, inputId = "main", selected = "inspect")
+        # showElement(id = "decision_indicator")
+        # showElement(id = "file_selector")
         #enable(id = "next1")
         #enable(id = "previous")
         #enable(id = "accept")
@@ -143,7 +157,7 @@ server <- function(input, output, session) {
         if(is.null(values$file_index)) return(NULL)
         print("decision indicator")
         dataset_decisions <- isolate(values$dataset_decisions)
-        number_of_datasets <- length(dataset_decisions)
+        number_of_datasets <- isolate(values$number_of_files)
         #print(number_of_datasets*35)
         #print(dataset_decisions)
         #print(1:number_of_datasets)
@@ -172,11 +186,6 @@ server <- function(input, output, session) {
         #return(decision_indicator(decision_index = values$dataset_decisions, position_index = values$file_index))
     })
 
-    observeEvent(input$plot_click,{
-        print(isolate(input$plot_click$x))
-        print(isolate(input$plot_click$y))
-    })
-
     observeEvent(input$accept, label = "Accept", {
         values$dataset_decisions[[values$file_index]] <- TRUE
         if(values$file_index < values$number_of_files) values$file_index <- values$file_index + 1
@@ -201,7 +210,6 @@ server <- function(input, output, session) {
     #     values$dataset_decisions[values$file_index:values$number_of_files] <- TRUE
     #     View(values$dataset_decisions)
     # })
-
 
     observeEvent(input$save, label = "saveFiles", {
         toggleState(id="find_dir", condition = (input$save == TRUE))
@@ -270,7 +278,8 @@ observeEvent(process_all_listener(), {
         #df_list <- myData()[values$dataset_decisions]
         print("input_files")
         print(input$data_file[,"name"])
-        ffd <- input_files()
+        #ffd <- input_files()
+        ffd <- values$ffd
         print(values$dataset_names)
         print(values$dataset_decisions)
         print(values$dataset_names[values$dataset_decisions])
