@@ -100,7 +100,7 @@ ui <- fluidPage(
                               tabPanel(title = "Fit the Binding Model", value = "fit", icon = icon("cogs", lib="font-awesome"),
                                        wellPanel(
                                            h1(textOutput("Batch Analysis")),
-                                           plotOutput("processed_output")
+                                           plotOutput("processed_output", width = "100%", height = "100%")
                                        ))
                   )
         )

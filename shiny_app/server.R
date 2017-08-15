@@ -96,7 +96,7 @@ server <- function(input, output, session) {
         ird <- fret_inspect_raw_data(raw_data = ffd,
                                      plot_format = "png",
                                      output_directory = isolate(values$output_dir))
-        print(class(ird))
+        print("myData")
         #hideElement("splash_screen")
         #showElement("raw_output")
         #showElement("accept")
@@ -116,13 +116,15 @@ server <- function(input, output, session) {
         #}
         return(ird)
     })
-    output$filename <- renderText({
-        if(is.null(input$data_file)) return(NULL)
-            return(paste(values$file_index, " : ", values$dataset_names[[values$file_index]]))
-    })
+
+    # output$filename <- renderText({
+    #     if(is.null(input$data_file)) return(NULL)
+    #         return(paste(values$file_index, " : ", values$dataset_names[[values$file_index]]))
+    # })
 
     output$raw_output <- renderPlot(height = 800, {
         if(is.null(input$data_file)) return(NULL)
+        print("render the inspection plots")
         #showElement("accept")
         #df <- data.frame(myData()[[values$file_index]])
         raw_data_plots <- myData()[[values$file_index]]
@@ -147,10 +149,11 @@ server <- function(input, output, session) {
         #print(1:number_of_datasets)
         #print(class(isolate(values$dataset_decisions)))
         #print(class(1:length(isolate(values$dataset_decisions))))
-        selected <- rep(FALSE, number_of_datasets)
         #print(isolate(values$file_index))
-        selected[isolate(values$file_index)] <- TRUE
-        #print(selected)
+
+        # selected <- rep(FALSE, number_of_datasets)
+        # selected[isolate(values$file_index)] <- TRUE
+        # print(selected)
         p <- do.call(grid.arrange,
                      c(mapply(FUN = make_indicator,
                               dataset_decisions,
@@ -159,7 +162,6 @@ server <- function(input, output, session) {
                               SIMPLIFY = FALSE,
                               USE.NAMES = FALSE),
                        ncol = 1))
-        #print(p)
         output$decision_indicator <- renderPlot(
             once=FALSE,
             width=30,
@@ -306,10 +308,23 @@ observeEvent(process_all_listener(), {
         # #df_names <- names(myData())[values$dataset_decisions]
         #print(df_names)
         #names(df_list) <- df_names
-        print(ffd)
-        print(names(ffd))
+        #print(ffd)
+        #print(names(ffd))
+        print("figures")
+        print(class(figures))
+        print(length(figures))
+        print(figures[[1]])
+        print(class(figures[[1]]))
+        figures <- lapply(X = figures,
+                          FUN = function(X) X +
+                              theme(plot.margin=unit(c(.5,.05,.5,.05),"cm"),
+                                    panel.border = element_rect(fill = NA,
+                                                                colour = "gray40",
+                                                                linetype = 1,
+                                                                size = 1)))
         figure_grid <- do.call(grid.arrange, c(figures, ncol=1, nrow=length(figures)))
-        output$processed_output <- renderPlot(height = 300*length(figures), { grid.draw(figure_grid) })
+        output$processed_output <- renderPlot(height = 400*length(figures), {grid.draw(figure_grid)})
+
     })
     process_all_listener <- reactive({input$process_all})
 
@@ -335,21 +350,21 @@ observeEvent(process_all_listener(), {
             toggleState(id = "reject", condition = (!is.null(input$data_file)))
             toggleState(id = "accept_all", condition = (!is.null(input$data_file)))
             #toggleElement(id = "accept_all", condition = (!is.null(input$data_file)))
-            if(!is.na(values$dataset_decisions[[values$file_index]])){
-                if(values$dataset_decisions[[values$file_index]] == TRUE){
-                    output$decision_image <- renderImage({list(src = "green_check.png",
-                                                               width = 30, height = 30, contentType = 'image/png',alt = "Accept")}, deleteFile = FALSE)
-                }
-                if(values$dataset_decisions[[values$file_index]] == FALSE){
-                    output$decision_image <- renderImage({list(src = "red_x.png",
-                                                               width = 30, height = 30, contentType = 'image/png',alt = "Reject")}, deleteFile = FALSE)
-                }
-            } else {
-                output$decision_image <- renderImage({list(src = "yellow_question.png",
-                                                           width = 30, height = 30, contentType = 'image/png',alt = "Uninspected")}, deleteFile = FALSE)
-            }
+            # if(!is.na(values$dataset_decisions[[values$file_index]])){
+            #     if(values$dataset_decisions[[values$file_index]] == TRUE){
+            #         output$decision_image <- renderImage({list(src = "green_check.png",
+            #                                                    width = 30, height = 30, contentType = 'image/png',alt = "Accept")}, deleteFile = FALSE)
+            #     }
+            #     if(values$dataset_decisions[[values$file_index]] == FALSE){
+            #         output$decision_image <- renderImage({list(src = "red_x.png",
+            #                                                    width = 30, height = 30, contentType = 'image/png',alt = "Reject")}, deleteFile = FALSE)
+            #     }
+            # } else {
+            #     output$decision_image <- renderImage({list(src = "yellow_question.png",
+            #                                                width = 30, height = 30, contentType = 'image/png',alt = "Uninspected")}, deleteFile = FALSE)
+            # }
         }
-        showElement(id = "decision_image")
+        # showElement(id = "decision_image")
     })
 }
 ## Icons from Font-Awesome (http://fontawesome.io/icons/) and Bootstrap/Glyphicon (https://getbootstrap.com/docs/3.3/components/#glyphicons)
