@@ -44,15 +44,21 @@ decision_indicator <- function(decision_index, position_index){
 }
 
 make_indicator <- function(decision=NA, text_label=NULL, selected=NULL){
+
+    col_TRUE <- "#00D24E"
+    col_FALSE <- "#FF1300"
+    col_NA <- "#e7e7e7"
+    # Palette link: http://paletton.com/#uid=303050kE1GeyhT4KUTotKsltupU
+
     line_color <- "black"
     if(isTRUE(decision)){
-        fill_color <- "#61af3d"
+        fill_color <- col_TRUE
         }
     if(!isTRUE(decision) & !is.na(decision)){
-        fill_color <- "#e50000"
+        fill_color <- col_FALSE
         }
     if(is.na(decision)){
-        fill_color <- "#e7e7e7"
+        fill_color <- col_NA
         }
     center <- c(1,1)
    diameter <- 1
