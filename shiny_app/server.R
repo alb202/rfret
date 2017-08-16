@@ -47,58 +47,60 @@ server <- function(input, output, session) {
         print("show input data")
         print(input$data_file)
         print(filenames)
-        ffd <- fret_format_data(input = filenames, skip_lines = 4)
-        values$ffd <- ffd
-        #print(abc)
-        # print("input$data_file")
-        # print(input$data_file)
-        values$file_index <- 1
-        values$number_of_files <- length(filenames)
-        print("number of files: ")
-        print(values$number_of_files)
-        isolate(values$dataset_decisions <- rep(NA, values$number_of_files))
-        # values$dataset_names <- sort(sub(names(objectsLoaded),
-        #                                  pattern = ".csv",
-        #                                  replacement = ""))
-        print("dataset names")
-        print(unique(x = ffd$Experiment))
-        isolate(values$dataset_names <- sort(unique(x = ffd$Experiment)))
-        #print(objectsLoaded[[1]])
-        # print(length(objectsLoaded))
-        # print(names(objectsLoaded))
-        # print(class(objectsLoaded[1]))
-        # print(class(objectsLoaded[[1]]))
+        withProgress(message = 'Working: ', value = 0, detail = "Formatting data ...", {
+            ffd <- fret_format_data(input = filenames, skip_lines = 4)
+            values$ffd <- ffd
+            #print(abc)
+            # print("input$data_file")
+            # print(input$data_file)
+            values$file_index <- 1
+            values$number_of_files <- length(filenames)
+            print("number of files: ")
+            print(values$number_of_files)
+            isolate(values$dataset_decisions <- rep(NA, values$number_of_files))
+            # values$dataset_names <- sort(sub(names(objectsLoaded),
+            #                                  pattern = ".csv",
+            #                                  replacement = ""))
+            print("dataset names")
+            print(unique(x = ffd$Experiment))
+            isolate(values$dataset_names <- sort(unique(x = ffd$Experiment)))
+            #print(objectsLoaded[[1]])
+            # print(length(objectsLoaded))
+            # print(names(objectsLoaded))
+            # print(class(objectsLoaded[1]))
+            # print(class(objectsLoaded[[1]]))
 
-        # If an output directory has not been set, make it null
-        print("output dir")
-        #print(values)
-        print(is.null(isolate(values$output_dir)))
-        # print(values[[1]])
-        # print(class(values))
-        # print(str(values))
-        print(isolate(values$output_dir))
-        # print(("output_dir" %in% values)==FALSE)
-        # print(input$save==FALSE)
-        # print(!("output_dir" %in% values) | input$save==FALSE)
-        if(input$save==FALSE)
-            isolate(values$output_dir <- NULL)
-        if(input$save==TRUE & !is.null(isolate(values$output_dir))){
-            if(!isTRUE(dir.exists(paths = isolate(values$output_dir))))
-                dir.create(path = isolate(values$output_dir))
-        }
-        # Use the RFRET function to format the data frames
-        #ffd <- fret_format_data(input = objectsLoaded)
-
-        updateTabsetPanel(session = session, inputId = "sidebar", selected = "advanced")
-        updateTabsetPanel(session = session, inputId = "main", selected = "inspect")
-        showElement(id = "decision_indicator")
-        showElement(id = "file_selector")
-        if (is.null(ffd)) return(NULL)
-        ird <- fret_inspect_raw_data(raw_data = ffd,
-                                     plot_format = "png",
-                                     output_directory = isolate(values$output_dir))
-
-        #values$number_of_files <- length(ird)
+            # If an output directory has not been set, make it null
+            print("output dir")
+            #print(values)
+            print(is.null(isolate(values$output_dir)))
+            # print(values[[1]])
+            # print(class(values))
+            # print(str(values))
+            print(isolate(values$output_dir))
+            # print(("output_dir" %in% values)==FALSE)
+            # print(input$save==FALSE)
+            # print(!("output_dir" %in% values) | input$save==FALSE)
+            if(input$save==FALSE)
+                isolate(values$output_dir <- NULL)
+            if(input$save==TRUE & !is.null(isolate(values$output_dir))){
+                if(!isTRUE(dir.exists(paths = isolate(values$output_dir))))
+                    dir.create(path = isolate(values$output_dir))
+            }
+            # Use the RFRET function to format the data frames
+            #ffd <- fret_format_data(input = objectsLoaded)
+            incProgress(.5, detail = "Generating figures ...")
+            if (is.null(ffd)) return(NULL)
+            ird <- fret_inspect_raw_data(raw_data = ffd,
+                                         plot_format = "png",
+                                         output_directory = isolate(values$output_dir))
+            incProgress(1, detail = "Displaying figures ...")
+            updateTabsetPanel(session = session, inputId = "sidebar", selected = "advanced")
+            updateTabsetPanel(session = session, inputId = "main", selected = "inspect")
+            showElement(id = "decision_indicator")
+            showElement(id = "file_selector")
+            #values$number_of_files <- length(ird)
+        })
         return(ird)
         # return(ffd)
     })
@@ -302,40 +304,46 @@ observeEvent(process_all_listener(), {
             binding_model <- input$algorithm
             print("binding is not hill")
         }
-        figures <- ffd %>%
-            fret_average_replicates() %>%
-            fret_correct_signal(output_directory = isolate(values$output_dir)) %>%
-            fit_binding_model(binding_model = binding_model,
-                              probe_concentration = as.numeric(input$donor_concentration),
-                              output_directory = isolate(values$output_dir)) %>%
-            make_figure(probe_concentration = as.numeric(input$donor_concentration),
-                        output_directory = isolate(values$output_dir),
-                        plot_format = "png")
 
-        # print(class(figure))
-        # print(class(figure[[1]]))
-        # print(class(figure[1]))
-        # print(length(figure))
-        # #df_names <- names(myData())[values$dataset_decisions]
-        #print(df_names)
-        #names(df_list) <- df_names
-        #print(ffd)
-        #print(names(ffd))
-        print("figures")
-        print(class(figures))
-        print(length(figures))
-        print(figures[[1]])
-        print(class(figures[[1]]))
-        figures <- lapply(X = figures,
-                          FUN = function(X) X +
-                              theme(plot.margin=unit(c(.5,.05,.5,.05),"cm"),
-                                    panel.border = element_rect(fill = NA,
-                                                                colour = "gray40",
-                                                                linetype = 1,
-                                                                size = 1)))
-        figure_grid <- do.call(grid.arrange, c(figures, ncol=1, nrow=length(figures)))
-        output$processed_output <- renderPlot(height = 400*length(figures), {grid.draw(figure_grid)})
+        withProgress(message = 'Working: ', value = 0, detail = "Fitting binding model ...", {
+            #incProgress(0, detail = )
+            figures <- ffd %>%
+                fret_average_replicates() %>%
+                fret_correct_signal(output_directory = isolate(values$output_dir)) %>%
+                fit_binding_model(binding_model = binding_model,
+                                  probe_concentration = as.numeric(input$donor_concentration),
+                                  output_directory = isolate(values$output_dir)) %>%
+                make_figure(probe_concentration = as.numeric(input$donor_concentration),
+                            output_directory = isolate(values$output_dir),
+                            plot_format = "png")
+            incProgress(.5, detail = "Generating figures ...")
 
+            # print(class(figure))
+            # print(class(figure[[1]]))
+            # print(class(figure[1]))
+            # print(length(figure))
+            # #df_names <- names(myData())[values$dataset_decisions]
+            #print(df_names)
+            #names(df_list) <- df_names
+            #print(ffd)
+            #print(names(ffd))
+            print("figures")
+            # print(class(figures))
+            # print(length(figures))
+            # print(figures[[1]])
+            # print(class(figures[[1]]))
+            figures <- lapply(X = figures,
+                              FUN = function(X) X +
+                                  theme(plot.margin=unit(c(.5,.05,.5,.05),"cm"),
+                                        panel.border = element_rect(fill = NA,
+                                                                    colour = "gray40",
+                                                                    linetype = 1,
+                                                                    size = 1)))
+            figure_grid <- do.call(grid.arrange, c(figures, ncol=1, nrow=length(figures)))
+            output$processed_output <- renderPlot(height = 400*length(figures), {grid.draw(figure_grid)})
+            incProgress(1, detail = "Displaying figures ...")
+            #return(output$processed_output)
+        })
     })
     process_all_listener <- reactive({input$process_all})
 
