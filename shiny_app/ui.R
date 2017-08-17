@@ -58,9 +58,12 @@ ui <- fluidPage(
                                                                        value = FALSE),
                                                          numericInput('donor_concentration',
                                                                       'Donor Concentration (required if algorithm is quadratic)',
-                                                                      value = NULL)
-                                                         #textOutput("Enter a donor concentration or change the algorithm!")
-                                                  )))),
+                                                                      value = NULL),
+                                                         tags$style("#conc_required{color: red;
+                                                                             font-size: 12px;
+                                                                             }"),
+                                                                    hidden(textOutput(outputId="conc_required"))
+                                                         )))),
                                  tabPanel(title = "Help", value = "help", icon = icon("question-sign", lib="glyphicon"),
                                           tags$hr(),
                                           h5("Help information")
@@ -97,11 +100,34 @@ ui <- fluidPage(
                                                   plotOutput(outputId = "raw_output", width = "100%", height = "100%")),
                                            fluidRow(column(width=12, offset=0))
                                        )),
-                              tabPanel(title = "Fit the Binding Model", value = "fit", icon = icon("cogs", lib="font-awesome"),
+                              tabPanel(title = "Fit the Binding Model", value = "fit_new", icon = icon("cogs", lib="font-awesome"),
                                        wellPanel(
-                                           h1(textOutput("Batch Analysis")),
-                                           plotOutput("processed_output", width = "100%", height = "100%")
+                                           #fluidRow(column(width=12, offset=0)),
+                                           column(1,
+                                                  #fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "accept", label = "", icon = icon("ok", lib = "glyphicon")))),
+                                                  #fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "reject", label = "", icon = icon("remove", lib = "glyphicon")))),
+                                                  fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "previous_res", label = "", icon = icon("arrow_up", lib = "glyphicon")))),
+                                                  fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "next_res", label = "", icon = icon("arrow_down", lib = "glyphicon")))),
+                                                  #fluidRow(div(style = "height:5px;")),
+                                                  #fluidRow(align="center", disabled(actionButton(inputId = "previous", label ="", icon = icon("arrow-up", lib = "glyphicon")))),
+                                                  #fluidRow(align="center", disabled(actionButton(inputId = "next1", label ="", icon = icon("arrow-down", lib = "glyphicon")))),
+                                                  fluidRow(div(style = "height:5px;")),
+                                                  fluidRow(align="left", div(style = "display:inline-block;content-align:left;",
+                                                                             column(2, div(style = "align-content:left;background-color:none;", #width:5px; align="left",
+                                                                                           div(style = "height:7px;"),
+                                                                                           hidden(plotOutput(inline=FALSE, outputId = "results_indicator")))),
+                                                                             column(2, div(style = "align-content:left;background-color:none;",#style = "align-content:left;width:10px;background-color:none;",
+                                                                                           hidden(uiOutput(inline=FALSE,'results_selector')))) #display:inline-block;align:left;
+                                                  ))),
+                                           column(11,
+                                                  plotOutput(outputId = "processed_output", width = "100%", height = "100%")),
+                                           fluidRow(column(width=12, offset=0))
                                        ))
+                              # tabPanel(title = "Fit the Binding Model", value = "fit", icon = icon("cogs", lib="font-awesome"),
+                              #          wellPanel(
+                              #              h1(textOutput("Batch Analysis")),
+                              #              plotOutput("processed_output", width = "100%", height = "100%")
+                              #          ))
                   )
         )
     )
