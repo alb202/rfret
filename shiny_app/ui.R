@@ -104,13 +104,8 @@ ui <- fluidPage(
                                        wellPanel(
                                            #fluidRow(column(width=12, offset=0)),
                                            column(1,
-                                                  #fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "accept", label = "", icon = icon("ok", lib = "glyphicon")))),
-                                                  #fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "reject", label = "", icon = icon("remove", lib = "glyphicon")))),
-                                                  fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "previous_res", label = "", icon = icon("arrow_up", lib = "glyphicon")))),
-                                                  fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "next_res", label = "", icon = icon("arrow_down", lib = "glyphicon")))),
-                                                  #fluidRow(div(style = "height:5px;")),
-                                                  #fluidRow(align="center", disabled(actionButton(inputId = "previous", label ="", icon = icon("arrow-up", lib = "glyphicon")))),
-                                                  #fluidRow(align="center", disabled(actionButton(inputId = "next1", label ="", icon = icon("arrow-down", lib = "glyphicon")))),
+                                                  fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "previous", label = "", icon = icon("arrow-up", lib = "glyphicon")))),
+                                                  fluidRow(align="center", div(style = "display:inline-block;width:5px;"), disabled(actionButton(inputId = "next1", label = "", icon = icon("arrow-down", lib = "glyphicon")))),
                                                   fluidRow(div(style = "height:5px;")),
                                                   fluidRow(align="left", div(style = "display:inline-block;content-align:left;",
                                                                              column(2, div(style = "align-content:left;background-color:none;", #width:5px; align="left",
@@ -120,14 +115,15 @@ ui <- fluidPage(
                                                                                            hidden(uiOutput(inline=FALSE,'results_selector')))) #display:inline-block;align:left;
                                                   ))),
                                            column(11,
-                                                  plotOutput(outputId = "processed_output", width = "100%", height = "100%")),
+                                                  plotOutput(outputId = "results_output", width = "100%", height = "100%"),
+                                                  tableOutput(outputId = "results_table")),
                                            fluidRow(column(width=12, offset=0))
+                                       )),
+                              tabPanel(title = "Plan the Experiment", value = "plan", icon = icon("list-alt", lib="glyphicon"),
+                                       wellPanel(
+                                           h1(textOutput("Batch Analysis")),
+                                           plotOutput("processed_output", width = "100%", height = "100%")
                                        ))
-                              # tabPanel(title = "Fit the Binding Model", value = "fit", icon = icon("cogs", lib="font-awesome"),
-                              #          wellPanel(
-                              #              h1(textOutput("Batch Analysis")),
-                              #              plotOutput("processed_output", width = "100%", height = "100%")
-                              #          ))
                   )
         )
     )
