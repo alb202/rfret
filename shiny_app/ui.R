@@ -53,12 +53,8 @@ ui <- fluidPage(
                                                                       c('Hyperbolic'='hyperbolic',
                                                                         'Hyperbolic (with Hill coefficient)'='hill',
                                                                         'Quadratic'="quadratic")),
-                                                         #tags$hr(),
-                                                         # checkboxInput("hill_coefficient",
-                                                         #               "Fit the Hill Coefficient (optional if algorithm is quadratic)",
-                                                         #               value = FALSE),
                                                          numericInput('donor_concentration',
-                                                                      'Donor Concentration (required if algorithm is hyperbolic)',
+                                                                      'Donor Concentration (required if algorithm is quadratic)',
                                                                       value = NULL),
                                                          tags$style("#conc_required{color: red;
                                                                              font-size: 12px;
@@ -122,10 +118,12 @@ ui <- fluidPage(
                                        )),
                               tabPanel(title = "Corrected Data", value = "corrected", icon = icon("pencil", lib="glyphicon"),
                                                    wellPanel(
-                                                       column(10,
+                                                       #column(10,tableOutput(outputId = "corrected_data_output")),
+                                                       #column(10,verbatimTextOutput(outputId = "corrected_data_output")),
+                                                       column(10,uiOutput(outputId = "corrected_data_output")),
                                                        fluidRow(column(width=12, offset=0))
                                                    )
-                                       )),
+                                       ),
                               tabPanel(title = "Plan the Experiment", value = "plan", icon = icon("list-alt", lib="glyphicon"),
                                        wellPanel(
                                            column(10, numericInput('plan_kd',
@@ -136,9 +134,6 @@ ui <- fluidPage(
                                                                'Select the algorithm for fitting the binding model:',
                                                                c('Hyperbolic'='hyperbolic','Hyperbolic (with Hill coefficient)'='hill',
                                                                  'Quadratic'="quadratic")),
-                                                  # checkboxInput("plan_hill_coefficient",
-                                                  #               "Fit the Hill Coefficient (optional if algorithm is hyperbolic)",
-                                                  #               value = FALSE),
                                                   numericInput('plan_hill_coefficient',
                                                                'Hill coefficient value',
                                                                value = NULL),
@@ -149,10 +144,11 @@ ui <- fluidPage(
                                                                'Minimum concentration',
                                                                value = NULL),
                                                   numericInput('plan_max_concentration',
-                                                               'Minimum concentration',
+                                                               'Maximum concentration',
                                                                value = NULL),
                                                   plotOutput(outputId = "plan_output")
                                            ),
+                                           fluidRow(column(downloadButton(outputId = 'plan_download', label = "Download Plot"), width=12, offset=0)),
                                            fluidRow(column(width=12, offset=0))
                                        )
                               )

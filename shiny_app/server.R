@@ -312,10 +312,26 @@ server <- function(input, output, session) {
         withProgress(message = 'Working: ', value = 0, min = 0, max = 1, detail = "Fitting binding model ...", {
 
             # Fit the binding model
-            fbm <- ffd %>%
+            corrected_data <- ffd %>%
                 fret_average_replicates() %>%
-                fret_correct_signal(output_directory = isolate(values$output_dir)) %>%
-                fit_binding_model(binding_model = input$algorithm,
+                fret_correct_signal(output_directory = isolate(values$output_dir))
+
+            # output$corrected_data_output <- renderTable(striped = TRUE,
+            #                                             rownames = TRUE,
+            #                                             colnames = TRUE, digits = 8,
+            #                                             expr = {split( corrected_data , f = corrected_data$Experiment)})
+            #
+            #output$corrected_data_output <- renderText({split( corrected_data , f = corrected_data$Experiment)})
+            #output$corrected_data_output <- renderText({corrected_data})
+            split_data <- split(corrected_data , f = corrected_data$Experiment)
+            print(split_data)
+            output$corrected_data_output <- renderUI({
+                tagList(lapply(X = split_data, FUN = function(i) {
+                    renderTable(expr = {i}, striped = TRUE, rownames = FALSE, colnames = TRUE, digits = 5)
+                }))
+            })
+
+            fbm <- corrected_data %>% fit_binding_model(binding_model = input$algorithm,
                                   probe_concentration = as.numeric(input$donor_concentration),
                                   output_directory = isolate(values$output_dir))
 
@@ -440,6 +456,11 @@ server <- function(input, output, session) {
         }
     })
 
+    output$plan_download <- downloadHandler(filename = "experiment_plan.png", content = function(file){
+        png(file)
+        print(values$plan_output)
+        dev.off()
+    }, contentType = "image/png")
     output$plan_output <- renderPlot({
         toggleState(id="plan_donor_concentration", condition = (input$plan_algorithm == "quadratic"))
         toggleState(id="plan_hill_coefficient", condition = (input$plan_algorithm == "hill"))
@@ -450,16 +471,8 @@ server <- function(input, output, session) {
         if(!is.na(input$plan_donor_concentration)) plan_parameters <- c(plan_parameters,probe_conc = input$plan_donor_concentration)
         if(!is.na(input$plan_hill_coefficient)) plan_parameters <- c(plan_parameters, hill_coef = input$plan_hill_coefficient )
         print(plan_parameters)
-        do.call(plan_experiment, plan_parameters)
-
-        # plan_experiment(
-        #     kd = input$plan_kd,
-        #     min_concentration = input$plan_min_concentration,
-        #     max_concentration = input$plan_max_concentration,
-        #     binding_model = input$plan_algorithm,
-        #     probe_conc = input$plan_donor_concentration,
-        #     hill_coef = input$plan_hill_coefficient_value
-        # )
+        values$plan_output <- do.call(plan_experiment, plan_parameters)
+        return(values$plan_output)
     })
 
 }
