@@ -17,6 +17,7 @@ source("../R/make_figure.R")
 source("../R/guess_parameters.R")
 source("../R/equations.R")
 source("../R/utilities.R")
+source("../R/plan_experiment.R")
 source("graphics.R")
 
 server <- function(input, output, session) {
@@ -202,7 +203,8 @@ server <- function(input, output, session) {
     observeEvent(input$algorithm, {
         # Enable the hill coefficient or donor concentration option depending on the algorithm
         toggleState(id="donor_concentration", condition = (input$algorithm == "quadratic"))
-        toggleState(id="hill_coefficient", condition = (input$algorithm == "hyperbolic"))})
+        #toggleState(id="hill_coefficient", condition = (input$algorithm == "hyperbolic"))
+        })
 
     ## These are background processes
     output$save_dir <- renderText({
@@ -298,13 +300,13 @@ server <- function(input, output, session) {
         values$number_of_positive_decisions <- sum(isolate(values$dataset_decisions))
 
         # If the Hill Concentration option is selected, set "hill" as the algorithm. Otherwise, use hyperbolic or quadratic
-        if(isTRUE(input$hill_coefficient) && input$algorithm!="quadratic"){
-            binding_model <- "hill"
-            print("binding is hill")
-        } else{
-            binding_model <- input$algorithm
-            print("binding is not hill")
-        }
+        # if(isTRUE(input$hill_coefficient) && input$algorithm!="quadratic"){
+        #     binding_model <- "hill"
+        #     print("binding is hill")
+        # } else{
+        #     binding_model <- input$algorithm
+        #     print("binding is not hill")
+        # }
 
         ## Start the progress indicator
         withProgress(message = 'Working: ', value = 0, min = 0, max = 1, detail = "Fitting binding model ...", {
@@ -313,7 +315,7 @@ server <- function(input, output, session) {
             fbm <- ffd %>%
                 fret_average_replicates() %>%
                 fret_correct_signal(output_directory = isolate(values$output_dir)) %>%
-                fit_binding_model(binding_model = binding_model,
+                fit_binding_model(binding_model = input$algorithm,
                                   probe_concentration = as.numeric(input$donor_concentration),
                                   output_directory = isolate(values$output_dir))
 
@@ -436,6 +438,28 @@ server <- function(input, output, session) {
                                     ncol=1))
             })
         }
+    })
+
+    output$plan_output <- renderPlot({
+        toggleState(id="plan_donor_concentration", condition = (input$plan_algorithm == "quadratic"))
+        toggleState(id="plan_hill_coefficient", condition = (input$plan_algorithm == "hill"))
+        plan_parameters <- list(kd = input$plan_kd)
+        if(!is.na(input$plan_min_concentration)) plan_parameters <- c(plan_parameters, min_concentration = input$plan_min_concentration)
+        if(!is.na(input$plan_max_concentration)) plan_parameters <- c(plan_parameters, max_concentration = input$plan_max_concentration)
+        if(!is.na(input$plan_algorithm)) plan_parameters <- c(plan_parameters, binding_model = input$plan_algorithm)
+        if(!is.na(input$plan_donor_concentration)) plan_parameters <- c(plan_parameters,probe_conc = input$plan_donor_concentration)
+        if(!is.na(input$plan_hill_coefficient)) plan_parameters <- c(plan_parameters, hill_coef = input$plan_hill_coefficient )
+        print(plan_parameters)
+        do.call(plan_experiment, plan_parameters)
+
+        # plan_experiment(
+        #     kd = input$plan_kd,
+        #     min_concentration = input$plan_min_concentration,
+        #     max_concentration = input$plan_max_concentration,
+        #     binding_model = input$plan_algorithm,
+        #     probe_conc = input$plan_donor_concentration,
+        #     hill_coef = input$plan_hill_coefficient_value
+        # )
     })
 
 }

@@ -51,13 +51,14 @@ ui <- fluidPage(
                                                          radioButtons('algorithm',
                                                                       'Select the algorithm for fitting the binding model:',
                                                                       c('Hyperbolic'='hyperbolic',
+                                                                        'Hyperbolic (with Hill coefficient)'='hill',
                                                                         'Quadratic'="quadratic")),
                                                          #tags$hr(),
-                                                         checkboxInput("hill_coefficient",
-                                                                       "Fit the Hill Coefficient (optional if algorithm is quadratic)",
-                                                                       value = FALSE),
+                                                         # checkboxInput("hill_coefficient",
+                                                         #               "Fit the Hill Coefficient (optional if algorithm is quadratic)",
+                                                         #               value = FALSE),
                                                          numericInput('donor_concentration',
-                                                                      'Donor Concentration (required if algorithm is quadratic)',
+                                                                      'Donor Concentration (required if algorithm is hyperbolic)',
                                                                       value = NULL),
                                                          tags$style("#conc_required{color: red;
                                                                              font-size: 12px;
@@ -119,11 +120,42 @@ ui <- fluidPage(
                                                   tableOutput(outputId = "results_table")),
                                            fluidRow(column(width=12, offset=0))
                                        )),
+                              tabPanel(title = "Corrected Data", value = "corrected", icon = icon("pencil", lib="glyphicon"),
+                                                   wellPanel(
+                                                       column(10,
+                                                       fluidRow(column(width=12, offset=0))
+                                                   )
+                                       )),
                               tabPanel(title = "Plan the Experiment", value = "plan", icon = icon("list-alt", lib="glyphicon"),
                                        wellPanel(
-                                           h1(textOutput("Batch Analysis")),
-                                           plotOutput("processed_output", width = "100%", height = "100%")
-                                       ))
+                                           column(10, numericInput('plan_kd',
+                                                                   'Kd',
+                                                                   NULL,
+                                                                   min = 0),
+                                                  radioButtons('plan_algorithm',
+                                                               'Select the algorithm for fitting the binding model:',
+                                                               c('Hyperbolic'='hyperbolic','Hyperbolic (with Hill coefficient)'='hill',
+                                                                 'Quadratic'="quadratic")),
+                                                  # checkboxInput("plan_hill_coefficient",
+                                                  #               "Fit the Hill Coefficient (optional if algorithm is hyperbolic)",
+                                                  #               value = FALSE),
+                                                  numericInput('plan_hill_coefficient',
+                                                               'Hill coefficient value',
+                                                               value = NULL),
+                                                  numericInput('plan_donor_concentration',
+                                                               'Donor Concentration (required if algorithm is quadratic)',
+                                                               value = NULL),
+                                                  numericInput('plan_min_concentration',
+                                                               'Minimum concentration',
+                                                               value = NULL),
+                                                  numericInput('plan_max_concentration',
+                                                               'Minimum concentration',
+                                                               value = NULL),
+                                                  plotOutput(outputId = "plan_output")
+                                           ),
+                                           fluidRow(column(width=12, offset=0))
+                                       )
+                              )
                   )
         )
     )
