@@ -30,6 +30,7 @@ server <- function(input, output, session) {
     values$number_of_files <- NULL
     values$dataset_decisions <- NULL
     values$dataset_names <- NULL
+    values$raw_output <- list()
     values$save_dir <- NULL
     values$results_index <- NULL
     values$volumes <- c("Home"="~/", "Root"="/")
@@ -64,6 +65,7 @@ server <- function(input, output, session) {
 
             # Set the decision for each file to NA
             isolate(values$dataset_decisions <- rep(NA, values$number_of_files))
+            isolate(values$raw_output <- as.list(rep(NA, values$number_of_files)))
 
             # Print the dataset names from ffd
             print("dataset names")
@@ -80,8 +82,6 @@ server <- function(input, output, session) {
                 if(!isTRUE(dir.exists(paths = isolate(values$output_dir))))
                     dir.create(path = isolate(values$output_dir))
             }
-            # Update progress
-            incProgress(.5, detail = "Generating figures ...")
 
             # If for any reason ffd does not exist, stop
             if (is.null(ffd)) return(NULL)
@@ -91,32 +91,42 @@ server <- function(input, output, session) {
                                          plot_format = "png",
                                          output_directory = isolate(values$output_dir))
 
-            # Update progress
-            incProgress(1, detail = "Displaying figures ...")
+
 
             # Swith the tabs and enable the accept/reject buttons
             updateTabsetPanel(session = session, inputId = "sidebar", selected = "advanced")
             updateTabsetPanel(session = session, inputId = "main", selected = "inspect")
             showElement(id = "decision_indicator")
             showElement(id = "file_selector")
+
+            # Update progress
+            incProgress(.5, detail = "Generating figures ...")
+
+            # Generating inspection plots and saving them for viewing
+            inspection_plots <- lapply(X = ird,
+                                       FUN = function(i) {
+                                           grid.arrange(i$fret,
+                                                        i$donor,
+                                                        i$acceptor,
+                                                        nrow=3,
+                                                        ncol=1)})
+            # Update progress
+            incProgress(1, detail = "Displaying figures ...")
         })
 
-        # Return the ird object as input_files()
-        return(ird)
+        return(inspection_plots)
     })
 
     inspection_data <- reactive({
         ## This places the formatted inspection data into an object so you don't rerun the input function every time it needs to be accessed
         print("inspection_data")
-        # Return the input_files() data, which is just a copy of the ird object
+        # Return the input_files() data, which is all the inspection plots as a grid
         return(input_files())
     })
 
     results_figures <- reactive({
         ## This places the formatted results data into an object so you don't rerun the processing function every time it needs to be accessed
         print("results_data")
-        #if(is.null(results_\)) return(NULL)
-        #print(class(results_data))
         return(values$results_data)
     })
 
@@ -204,7 +214,7 @@ server <- function(input, output, session) {
         # Enable the hill coefficient or donor concentration option depending on the algorithm
         toggleState(id="donor_concentration", condition = (input$algorithm == "quadratic"))
         #toggleState(id="hill_coefficient", condition = (input$algorithm == "hyperbolic"))
-        })
+    })
 
     ## These are background processes
     output$save_dir <- renderText({
@@ -244,37 +254,6 @@ server <- function(input, output, session) {
         print(isolate(values$output_dir))
     })
 
-    # Update the inspection tab when a change is made
-    observeEvent(prelim_listener(), {
-        print("prelim listener")
-        # If there is data to inspect, enable to correct buttons on the inspection tab and display the graph
-        if(!is.null(inspection_data())){
-            toggleState(id = "process_all", condition = (sum(is.na(values$dataset_decisions)) == 0 &
-                                                             (sum(values$dataset_decisions==TRUE)>0)))
-            toggleState(id = "accept", condition = (!is.null(input$data_file)))
-            toggleState(id = "reject", condition = (!is.null(input$data_file)))
-            toggleState(id = "accept_all", condition = (!is.null(input$data_file)))
-
-            withProgress(message = 'Working: ', value = .5, detail = "Loading figures ...", {
-
-                # Render the inspection figure
-                output$raw_output <- renderPlot(height = 800, {
-                    if(is.null(input$data_file)) return(NULL)
-                    print("render the inspection plots")
-                    # Select the current data set and arrange the plots in a grid
-                    inspection_plots <- inspection_data()[[values$inspect_index]]
-                    return(grid.arrange(inspection_plots$fret,
-                                        inspection_plots$donor,
-                                        inspection_plots$acceptor,
-                                        nrow=3,
-                                        ncol=1))
-                })
-            })
-        }
-    })
-
-
-
     ## Actions that occur when processing selected files
     observeEvent(process_all_listener(), {
         print("processing")
@@ -290,55 +269,37 @@ server <- function(input, output, session) {
             req(input$donor_concentration)
         }
 
-        # Get the formatted data from the earlier step
-        ffd <- values$ffd
-
-        # Filter the formatted data using the accepted datasets
-        ffd <- ffd[ffd$Experiment %in% isolate(values$dataset_names)[values$dataset_decisions], ]
-
-        # Number of positive decisions
-        values$number_of_positive_decisions <- sum(isolate(values$dataset_decisions))
-
-        # If the Hill Concentration option is selected, set "hill" as the algorithm. Otherwise, use hyperbolic or quadratic
-        # if(isTRUE(input$hill_coefficient) && input$algorithm!="quadratic"){
-        #     binding_model <- "hill"
-        #     print("binding is hill")
-        # } else{
-        #     binding_model <- input$algorithm
-        #     print("binding is not hill")
-        # }
-
         ## Start the progress indicator
         withProgress(message = 'Working: ', value = 0, min = 0, max = 1, detail = "Fitting binding model ...", {
+
+            # Get the formatted data from the earlier step
+            ffd <- values$ffd
+
+            # Filter the formatted data using the accepted datasets
+            ffd <- ffd[ffd$Experiment %in% isolate(values$dataset_names)[values$dataset_decisions], ]
+
+            # Number of positive decisions
+            values$number_of_positive_decisions <- sum(isolate(values$dataset_decisions))
 
             # Fit the binding model
             corrected_data <- ffd %>%
                 fret_average_replicates() %>%
                 fret_correct_signal(output_directory = isolate(values$output_dir))
 
-            # output$corrected_data_output <- renderTable(striped = TRUE,
-            #                                             rownames = TRUE,
-            #                                             colnames = TRUE, digits = 8,
-            #                                             expr = {split( corrected_data , f = corrected_data$Experiment)})
-            #
-            #output$corrected_data_output <- renderText({split( corrected_data , f = corrected_data$Experiment)})
-            #output$corrected_data_output <- renderText({corrected_data})
-            split_data <- split(corrected_data , f = corrected_data$Experiment)
-            print(split_data)
             output$corrected_data_output <- renderUI({
-                tagList(lapply(X = split_data, FUN = function(i) {
+                tagList(lapply(X = split(corrected_data , f = corrected_data$Experiment), FUN = function(i) {
                     renderTable(expr = {i}, striped = TRUE, rownames = FALSE, colnames = TRUE, digits = 5)
                 }))
             })
 
             fbm <- corrected_data %>% fit_binding_model(binding_model = input$algorithm,
-                                  probe_concentration = as.numeric(input$donor_concentration),
-                                  output_directory = isolate(values$output_dir))
+                                                        probe_concentration = as.numeric(input$donor_concentration),
+                                                        output_directory = isolate(values$output_dir))
 
             # Update the progress indicator
             incProgress(.5, detail = "Generate the figures ...")
 
-            # Generate figures with binding model data
+            # Generate figures with binding model data)
             figures <- fbm %>% make_figure(probe_concentration = as.numeric(input$donor_concentration),
                                            output_directory = isolate(values$output_dir),
                                            plot_format = "png")
@@ -348,6 +309,7 @@ server <- function(input, output, session) {
 
             # Extract the fit coefficients from the binding model data and add them to the list of plots
             for(i in 1:length(figures)){
+                print(i)
                 figures[[i]][["coefficients"]] <- summary(fbm[[i]])[["coefficients"]]
             }
         })
@@ -403,30 +365,14 @@ server <- function(input, output, session) {
             figures <- values$results_data
             print("get the results data")
             # Display the plot
-            #print(class(figures))
-            #print(figures[[1]])
-            #print(str(figures))
             output$results_output <- renderPlot(height = 400, {figures[[values$results_index]]})
             print("render the plot")
 
             # Create the data table
-            #print({figures[[values$results_index]][["coefficients"]]})
             output$results_table <- renderTable(striped = TRUE,
                                                 rownames = TRUE,
                                                 colnames = TRUE, digits = 2,
                                                 expr = {figures[[values$results_index]][["coefficients"]]})
-
-            # figures <- lapply(X = figures,
-            #                   FUN = function(X) X +
-            #                       theme(plot.margin=unit(c(0,0,0,0),"cm"),
-            #                             panel.border = element_rect(fill = NA,
-            #                                                         colour = "gray40",
-            #                                                         linetype = 1,
-            #                                                         size = 0)))
-            # #figure_grid <- do.call(grid.arrange, c(figures, ncol=1, nrow=length(figures)))
-            # output$results_figure <- renderPlot(height = 400*length(1), {grid.draw(figures[[1]])})
-            # incProgress(1, detail = "Displaying figures ...")
-            #return(output$processed_output)
         })
     })
 
@@ -441,18 +387,7 @@ server <- function(input, output, session) {
             toggleState(id = "reject", condition = (!is.null(input$data_file)))
             toggleState(id = "accept_all", condition = (!is.null(input$data_file)))
 
-            # Render the inspection figure
-            output$raw_output <- renderPlot(height = 800, {
-                if(is.null(input$data_file)) return(NULL)
-                print("render the inspection plots")
-                # Select the current data set and arrange the plots in a grid
-                inspection_plots <- inspection_data()[[values$inspect_index]]
-                return(grid.arrange(inspection_plots$fret,
-                                    inspection_plots$donor,
-                                    inspection_plots$acceptor,
-                                    nrow=3,
-                                    ncol=1))
-            })
+            output$raw_output <- renderPlot(height = 800, {grid.draw(inspection_data()[[values$inspect_index]])})
         }
     })
 
@@ -461,6 +396,7 @@ server <- function(input, output, session) {
         print(values$plan_output)
         dev.off()
     }, contentType = "image/png")
+
     output$plan_output <- renderPlot({
         toggleState(id="plan_donor_concentration", condition = (input$plan_algorithm == "quadratic"))
         toggleState(id="plan_hill_coefficient", condition = (input$plan_algorithm == "hill"))
