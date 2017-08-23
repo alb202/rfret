@@ -11,7 +11,7 @@ ui <- fluidPage(
                 #plan_download{width: 140px;font-size: 14px;}
                  '
             ))),
-    titlePanel(strong("RFret - Rapid FRET Analysis in R"), windowTitle = "RFret - Rapid FRET Analysis in R"),
+    titlePanel(h4(strong("RFret - Rapid FRET Analysis in R")), windowTitle = "RFret - Rapid FRET Analysis in R"),
     sidebarLayout(
         sidebarPanel(width = 3,
                      tabsetPanel(id="sidebar", type = "tabs",
@@ -114,9 +114,10 @@ ui <- fluidPage(
                                                                              column(2, div(style = "align-content:left;background-color:none;",#style = "align-content:left;width:10px;background-color:none;",
                                                                                            hidden(uiOutput(inline=FALSE,'results_selector')))) #display:inline-block;align:left;
                                                   ))),
-                                           column(11,
-                                                  plotOutput(outputId = "results_output", width = "100%", height = "100%"),
-                                                  tableOutput(outputId = "results_table")),
+                                           column(11, align="center",
+                                                  tableOutput(outputId = "results_table"),
+                                                  plotOutput(outputId = "results_output", width = "100%", height = "100%")
+                                                  ),
                                            fluidRow(column(width=12, offset=0))
                                        )),
                               tabPanel(title = "Corrected Data", value = "corrected", icon = icon("pencil", lib="glyphicon"),
