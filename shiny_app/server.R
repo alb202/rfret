@@ -8,6 +8,7 @@ library(readr)
 library(shinythemes)
 library(shinyFiles)
 library(cowplot)
+#library(DT)
 source("../R/fret_inspect_raw_data.R")
 source("../R/fret_format_data.R")
 source("../R/fret_average_replicates.R")
@@ -139,22 +140,22 @@ server <- function(input, output, session) {
         # If an index hasn't been set, stop here
         if(is.null(values$inspect_index)) return(NULL)
         print("decision indicator")
-
+        #if(TRUE) return(NULL)
         # Generate the decision indicator by arranging the figures in a grid
-        p <- do.call(grid.arrange,
-                     c(mapply(FUN = make_indicator,
-                              isolate(values$dataset_decisions),
-                              1:isolate(values$number_of_files),
-                              SIMPLIFY = FALSE,
-                              USE.NAMES = FALSE),
-                       ncol = 1))
+        # p <- do.call(grid.arrange,
+        #              c(mapply(FUN = make_indicator,
+        #                       isolate(values$dataset_decisions),
+        #                       1:isolate(values$number_of_files),
+        #                       SIMPLIFY = FALSE,
+        #                       USE.NAMES = FALSE),
+        #                ncol = 1))
 
         # Render the decision indicator
-        output$decision_indicator <- renderPlot(
-            width=30,
-            height=(isolate(values$number_of_files)*30),
-            bg = "transparent",
-            {grid.draw(p)})
+        # output$decision_indicator <- renderPlot(
+        #     width=30,
+        #     height=(isolate(values$number_of_files)*30),
+        #     bg = "transparent",
+        #     {grid.draw(p)})
     })
 
     ## This is for the left Data tab
@@ -344,21 +345,23 @@ server <- function(input, output, session) {
             toggleState(id = "next1", condition = (values$results_index < values$number_of_positive_decisions))
             toggleState(id = "previous", condition = ((values$results_index > 1)))
 
-            # Generate the results indicator by arranging the figures in a grid as all TRUE
-            p <- do.call(grid.arrange,
-                         c(mapply(FUN = make_indicator,
-                                  rep(TRUE, values$number_of_positive_decisions),
-                                  1:isolate(values$number_of_positive_decisions),
-                                  SIMPLIFY = FALSE,
-                                  USE.NAMES = FALSE),
-                           ncol = 1))
+            output$results_indicator <- renderText({ html_indicator(rep(TRUE, values$number_of_positive_decisions)) })
 
-            # Render the decision indicator
-            output$results_indicator <- renderPlot(
-                width=30,
-                height=(isolate(values$number_of_positive_decisions)*30),
-                bg = "transparent",
-                {grid.draw(p)})
+            # # Generate the results indicator by arranging the figures in a grid as all TRUE
+            # p <- do.call(grid.arrange,
+            #              c(mapply(FUN = make_indicator,
+            #                       rep(TRUE, values$number_of_positive_decisions),
+            #                       1:isolate(values$number_of_positive_decisions),
+            #                       SIMPLIFY = FALSE,
+            #                       USE.NAMES = FALSE),
+            #                ncol = 1))
+            #
+            # # Render the decision indicator
+            # output$results_indicator <- renderPlot(
+            #     width=30,
+            #     height=(isolate(values$number_of_positive_decisions)*30),
+            #     bg = "transparent",
+            #     {grid.draw(p)})
 
             print("toggled the buttons")
             # Load the figure data
@@ -366,8 +369,7 @@ server <- function(input, output, session) {
             print("get the results data")
             # Display the plot
             output$results_output <- renderPlot(height = 400, {figures[[values$results_index]]})
-            print("render the plot")
-
+            print("render the results table")
             # Create the data table
             output$results_table <- renderTable(striped = TRUE,
                                                 rownames = TRUE,
@@ -387,6 +389,7 @@ server <- function(input, output, session) {
             toggleState(id = "reject", condition = (!is.null(input$data_file)))
             toggleState(id = "accept_all", condition = (!is.null(input$data_file)))
 
+            output$decision_indicator <- renderText({ html_indicator(values$dataset_decisions) })
             output$raw_output <- renderPlot(height = 800, {grid.draw(inspection_data()[[values$inspect_index]])})
         }
     })

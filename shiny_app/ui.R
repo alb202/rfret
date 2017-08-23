@@ -9,7 +9,8 @@ ui <- fluidPage(
             HTML('
                 #conc_required{color: red;font-size: 12px;}
                 #plan_download{width: 140px;font-size: 14px;}
-                 '))),
+                 '
+            ))),
     titlePanel(strong("RFret - Rapid FRET Analysis in R"), windowTitle = "RFret - Rapid FRET Analysis in R"),
     sidebarLayout(
         sidebarPanel(width = 3,
@@ -90,8 +91,8 @@ ui <- fluidPage(
                                                   fluidRow(div(style = "height:5px;")),
                                                   fluidRow(align="left", div(style = "display:inline-block;content-align:left;",
                                                                              column(2, div(style = "align-content:left;background-color:none;", #width:5px; align="left",
-                                                                                           div(style = "height:7px;"),
-                                                                                           hidden(plotOutput(inline=FALSE, outputId = "decision_indicator")))),
+                                                                                           div(style = "width: 50px; height:3px;"),
+                                                                                           hidden(htmlOutput(inline=FALSE, outputId = "decision_indicator")))),
                                                                              column(2, div(style = "align-content:left;background-color:none;",#style = "align-content:left;width:10px;background-color:none;",
                                                                                            hidden(uiOutput(inline=FALSE,'file_selector')))) #display:inline-block;align:left;
                                                   ))),
@@ -108,8 +109,8 @@ ui <- fluidPage(
                                                   fluidRow(div(style = "height:5px;")),
                                                   fluidRow(align="left", div(style = "display:inline-block;content-align:left;",
                                                                              column(2, div(style = "align-content:left;background-color:none;", #width:5px; align="left",
-                                                                                           div(style = "height:7px;"),
-                                                                                           hidden(plotOutput(inline=FALSE, outputId = "results_indicator")))),
+                                                                                           div(style = "width: 50px; height:3px;"),
+                                                                                           hidden(htmlOutput(inline=FALSE, outputId = "results_indicator")))),
                                                                              column(2, div(style = "align-content:left;background-color:none;",#style = "align-content:left;width:10px;background-color:none;",
                                                                                            hidden(uiOutput(inline=FALSE,'results_selector')))) #display:inline-block;align:left;
                                                   ))),

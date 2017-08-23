@@ -62,7 +62,7 @@ make_indicator <- function(decision=NA, text_label=NULL, selected=NULL){
         }
     center <- c(1,1)
    diameter <- 1
-   npoints <- 5000
+   npoints <- 100
    start <- 0
    end <- 2
    line_size <- .05
@@ -80,4 +80,20 @@ make_indicator <- function(decision=NA, text_label=NULL, selected=NULL){
     if(!is.null(text_label))
         p <- p + annotate(geom = "text", x = 1, y = 1, label = as.character(text_label), size=5)
     return(p)
+}
+
+html_indicator <- function(decisions){
+
+    # The color values for the 3 options
+    col_TRUE <- "#00D24E"
+    col_FALSE <- "#FF1300"
+    col_NA <- "#e7e7e7"
+
+    # For each decision, create a text string for the DIV that will be used in the HTML
+    unlist(mapply(1:length(decisions), decisions, FUN = function(x, y) {
+        if(is.na(y)) bg_color <- col_NA
+        if(isTRUE(y)) bg_color <- col_TRUE
+        if(identical(y,FALSE)) bg_color <- col_FALSE
+        paste('<div align="center" style="font-weight: normal; border-style: solid; border-width: 1px; border-color: #cccccc; line-height: 22px; margin: 3px; border-radius: 27px; width: 27px; height: 27px; background-color:', bg_color,'; color: black;">', x, '</div>', sep = "")
+    }))
 }
