@@ -85,8 +85,8 @@ make_indicator <- function(decision=NA, text_label=NULL, selected=NULL){
 html_indicator <- function(decisions){
 
     # The color values for the 3 options
-    col_TRUE <- "#00D24E"
-    col_FALSE <- "#FF1300"
+    col_TRUE <- "SpringGreen"
+    col_FALSE <- "Salmon"
     col_NA <- "#e7e7e7"
 
     # For each decision, create a text string for the DIV that will be used in the HTML
