@@ -374,7 +374,7 @@ server <- function(input, output, session) {
             output$results_table <- renderTable(striped = TRUE,
                                                 rownames = TRUE,
                                                 colnames = TRUE, digits = 2,
-                                                expr = {figures[[values$results_index]][["coefficients"]]})
+                                                expr = {figures[[values$results_index]][["coefficients"]][,1:2]})
         })
     })
 
