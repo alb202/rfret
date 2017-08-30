@@ -120,7 +120,7 @@ ui <- fluidPage(
                                                   ),
                                            fluidRow(column(width=12, offset=0))
                                        )),
-                              tabPanel(title = "Corrected Data", value = "corrected", icon = icon("pencil", lib="glyphicon"),
+                              tabPanel(title = "Corrected Data", value = "corrected", icon = icon("list-alt", lib="glyphicon"),
                                        wellPanel(
                                            #column(10,tableOutput(outputId = "corrected_data_output")),
                                            #column(10,verbatimTextOutput(outputId = "corrected_data_output")),
@@ -128,7 +128,7 @@ ui <- fluidPage(
                                            fluidRow(column(width=12, offset=0))
                                        )
                               ),
-                              tabPanel(title = "Plan the Experiment", value = "plan", icon = icon("list-alt", lib="glyphicon"),
+                              tabPanel(title = "Plan the Experiment", value = "plan", icon = icon("pencil", lib="glyphicon"),
                                        wellPanel(
                                            fluidRow(
                                                column(width = 3, offset = 1,
