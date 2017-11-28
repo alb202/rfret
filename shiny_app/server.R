@@ -8,7 +8,11 @@ library(readr)
 library(shinythemes)
 library(shinyFiles)
 library(cowplot)
+library(rlang)
+library(jsonlite)
+library(devtools)
 #library(DT)
+source("../R/rfret-package.R")
 source("../R/fret_inspect_raw_data.R")
 source("../R/fret_format_data.R")
 source("../R/fret_average_replicates.R")
@@ -17,9 +21,29 @@ source("../R/fit_binding_model.R")
 source("../R/make_figure.R")
 source("../R/guess_parameters.R")
 source("../R/equations.R")
-source("../R/utilities.R")
+#source("../R/utilities.R")
+source("../R/load_data.R")
 source("../R/plan_experiment.R")
 source("graphics.R")
+source("../R/fret_job_plot.R")
+source("../R/on_attach.R")
+source("../R/get_user_metadata.R")
+source("environment.R")
+#source("../data-raw/make_default_metadata.R")
+#source("R/equations.R")
+#source("R/rfret-package.R")
+#source("R/datasets.R")
+#source("R/make_figure.R")
+#source("R/fret_average_replicates.R")
+#source("R/fret_correct_signal.R")
+#source("R/fret_format_data.R")
+#source("R/fret_inspect_raw_data.R")
+#source("R/fret_job_plot.R")
+#source("R/fit_binding_model.R")
+#source("R/guess_parameters.R")
+#source("R/load_data.R")
+#source("R/on_attach.R")
+#source("R/plan_experiment.R")
 
 server <- function(input, output, session) {
 
@@ -46,6 +70,10 @@ server <- function(input, output, session) {
         # Disable the "Save ... " option
         disable(id="save")
 
+        # Create the metadata environment
+        .rfret <- create_environment(
+            metadata_json = "../data-raw/default_metadata.json")
+        #print(.rfret$metadata)
         # Start the progress bar here
         withProgress(message = 'Working: ', value = 0, detail = "Formatting data ...", {
             # Get the original names of the files
