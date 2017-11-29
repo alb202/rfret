@@ -57,22 +57,29 @@ server <- function(input, output, session) {
     values$dataset_names <- NULL
     values$raw_output <- list()
     values$save_dir <- NULL
+    values$custom_headers <- NULL
     values$results_index <- NULL
     values$volumes <- c("Home"="~/", "Root"="/")
 
     input_files <- reactive({
         # If the "Save..." option is checked, make the directory button active
         toggleState(id="find_dir", condition = (input$save == TRUE))
+        toggleState(id="find_headers", condition = (input$headers == TRUE))
         # If no files have been selected, end here
         if (is.null(input$data_file)) return(NULL)
 
         ## After files have been selected, run these
-        # Disable the "Save ... " option
+        # Disable the "Save ... "  and "Custom headers" options
         disable(id="save")
+        disable(id="headers")
 
         # Create the metadata environment
-        .rfret <- create_environment(
-            metadata_json = "../data-raw/default_metadata.json")
+        print("enviro class")
+        .rfret <- create_environment()
+        print(class(.rfret))
+            #metadata_json = "../data-raw/default_metadata.json")
+       # if(input$headers == TRUE)
+    #        get_user_metadata(user_json_file = isolate(values$custom_headers))
         #print(.rfret$metadata)
         # Start the progress bar here
         withProgress(message = 'Working: ', value = 0, detail = "Formatting data ...", {
@@ -186,10 +193,16 @@ server <- function(input, output, session) {
         #     {grid.draw(p)})
     })
 
-    ## This is for the left Data tab
+    ## This is for the Save Folder button
     observeEvent(input$save, label = "saveFiles", {
         # If the "Save files" button is checked, enable the directory finder
         toggleState(id="find_dir", condition = (input$save == TRUE))
+    })
+
+    ## This is for the Custom Headers button
+    observeEvent(input$headers, label = "customHeaders", {
+        # If the "Save files" button is checked, enable the directory finder
+        toggleState(id="find_headers", condition = (input$headers == TRUE))
     })
 
     ## These two are for the inspection page
@@ -198,6 +211,7 @@ server <- function(input, output, session) {
         values$dataset_decisions[[values$inspect_index]] <- TRUE
         if(values$inspect_index < values$number_of_files) values$inspect_index <- values$inspect_index + 1
     })
+
     observeEvent(input$reject, label = "Reject", {
         # Set the decision as Reject, then increment if not at the end of files
         values$dataset_decisions[[values$inspect_index]] <- FALSE
@@ -248,8 +262,18 @@ server <- function(input, output, session) {
     ## These are background processes
     output$save_dir <- renderText({
         # If a save directory is selected, display the name of the save directory
+        print("render save dir")
+        print(values$save_dir)
         return(values$save_dir)
     })
+
+    output$header_file <- renderText({
+        # If a custom header is selected, display the name of the header file
+        print("custom headers print")
+        print(values$custom_headers)
+        return(values$custom_headers)
+    })
+
     observeEvent(input$inspect_index, {
         # Set the inspection index to the number of the radio button selected
         values$inspect_index <- as.numeric(input$inspect_index)
@@ -270,7 +294,7 @@ server <- function(input, output, session) {
         shinyDirChoose(input, "find_dir", roots=isolate(values$volumes), session=session)
 
         # Parse the result and save the output directory
-        values$save_dir <- parseDirPath(values$volumes, input$find_dir)
+        values$save_dir <- parseDirPath(roots = values$volumes, selection = input$find_dir)
 
         # Get the current time
         timestamp <- strsplit(x = as.character(Sys.time()), split = " ")
@@ -282,6 +306,37 @@ server <- function(input, output, session) {
         print(isolate(values$save_dir))
         print(isolate(values$output_dir))
     })
+
+    ## Get the location of custom headers
+    observe({
+        print("getting custom headers")
+
+        # If the save checkbox isn't selected, stop here
+        if(!isTRUE(input$headers)) return(NULL)
+        #
+        # # When the directory button is pressed, these run
+        # shinyDirChoose(input, "find_dir", roots=isolate(values$volumes), session=session)
+        #
+        # When the custom headers button is pressed, these run
+        shinyFileChoose(input = input, id = "find_headers", roots=isolate(values$volumes))
+        #shinyFileChoose(input, "find_headers", roots=isolate(values$volumes), session=session)
+        print("custom headers")
+        print(input$find_headers)
+        # Parse the result and save the output directory
+        #values$custom_headers <- parseFilePaths(roots = isolate(values$volumes), selection = input$custom_headers)
+        values$custom_headers <- as.character(parseFilePaths(roots = values$volumes, selection = input$find_headers)$datapath)
+        print(isolate(values$custom_headers))
+        # Get the current time
+        #timestamp <- strsplit(x = as.character(Sys.time()), split = " ")
+
+        # Make the full output directory with timestamp
+        #values$output_dir <- paste(values$save_dir, "/", timestamp[[1]][1], "_", timestamp[[1]][2], sep = "")
+
+        # Print the output directories
+        #print(isolate(values$custom_headers))
+        #print(isolate(values$output_dir))
+    })
+
 
     ## Actions that occur when processing selected files
     observeEvent(process_all_listener(), {

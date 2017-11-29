@@ -33,11 +33,19 @@ ui <- fluidPage(
                                                                           min = 0)),
 
                                                   column(10, tags$hr()),
+                                                  column(10, checkboxInput("headers", " Use custom headers ...", value = FALSE)),
+                                                  column(10, h5(textOutput("header_file"))),
+                                                  column(10, shinyFiles::shinyFilesButton(id = "find_headers",
+                                                                                          multiple = FALSE,
+                                                                                        label = "Select headers ...",
+                                                                                        title = "Select headers ...")),
+                                                  column(10, tags$hr()),
                                                   column(10, checkboxInput("save", " Save Files to folder ...", value = FALSE)),
                                                   column(10, h5(textOutput("save_dir"))),
                                                   column(10, shinyFiles::shinyDirButton(id = "find_dir",
                                                                                         label = "Select folder ...",
-                                                                                        title = "Select folder ..."))))),
+                                                                                        title = "Select folder ..."))
+                                                  ))),
                                  tabPanel(title = "Filter", value = "advanced", icon = icon("ok-circle", lib="glyphicon"),
                                           wellPanel(
                                               fluidRow(
