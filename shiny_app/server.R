@@ -75,11 +75,15 @@ server <- function(input, output, session) {
 
         # Create the metadata environment
         print("enviro class")
-        .rfret <- create_environment()
+        #.rfret <- create_environment()
+        print(.rfret$metadata)
         print(class(.rfret))
             #metadata_json = "../data-raw/default_metadata.json")
-       # if(input$headers == TRUE)
-    #        get_user_metadata(user_json_file = isolate(values$custom_headers))
+        get_user_metadata(user_json_file = "../data-raw/default_metadata.json")
+        if(input$headers == TRUE){
+            get_user_metadata(user_json_file = isolate(values$custom_headers))
+        }
+        print(.rfret$metadata)
         #print(.rfret$metadata)
         # Start the progress bar here
         withProgress(message = 'Working: ', value = 0, detail = "Formatting data ...", {
