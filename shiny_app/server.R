@@ -79,7 +79,7 @@ server <- function(input, output, session) {
         print(.rfret$metadata)
         print(class(.rfret))
             #metadata_json = "../data-raw/default_metadata.json")
-        get_user_metadata(user_json_file = "../data-raw/default_metadata.json")
+        get_user_metadata(user_json_file = "../default_metadata.json")
         if(input$headers == TRUE){
             get_user_metadata(user_json_file = isolate(values$custom_headers))
         }
