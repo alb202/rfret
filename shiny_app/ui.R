@@ -124,7 +124,8 @@ ui <- fluidPage(
                                                   ))),
                                            column(11, align="center",
                                                   tableOutput(outputId = "results_table"),
-                                                  plotOutput(outputId = "results_output", width = "100%", height = "100%")
+                                                  plotOutput(outputId = "results_output", width = "100%", height = "100%"),
+                                                  uiOutput(outputId = "results_corrected_data")
                                                   ),
                                            fluidRow(column(width=12, offset=0))
                                        )),

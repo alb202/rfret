@@ -370,17 +370,17 @@ server <- function(input, output, session) {
             values$number_of_positive_decisions <- sum(isolate(values$dataset_decisions))
 
             # Fit the binding model
-            corrected_data <- ffd %>%
+            values$corrected_data <- ffd %>%
                 fret_average_replicates() %>%
                 fret_correct_signal(output_directory = isolate(values$output_dir))
 
             output$corrected_data_output <- renderUI({
-                tagList(lapply(X = split(corrected_data , f = corrected_data$Experiment), FUN = function(i) {
+                tagList(lapply(X = split(values$corrected_data , f = values$corrected_data$Experiment), FUN = function(i) {
                     renderTable(expr = {i}, striped = TRUE, rownames = FALSE, colnames = TRUE, digits = 5)
                 }))
             })
 
-            fbm <- corrected_data %>% fit_binding_model(binding_model = input$algorithm,
+            fbm <- values$corrected_data %>% fit_binding_model(binding_model = input$algorithm,
                                                         probe_concentration = as.numeric(input$donor_concentration),
                                                         output_directory = isolate(values$output_dir))
 
@@ -462,6 +462,15 @@ server <- function(input, output, session) {
                                                 rownames = TRUE,
                                                 colnames = TRUE, digits = 2,
                                                 expr = {figures[[values$results_index]][["coefficients"]][,1:2]})
+            output$results_corrected_data <- renderUI({
+                #tagList(lapply(X = split(values$corrected_data , f = values$corrected_data$Experiment), FUN = function(i) {
+                #    renderTable(expr = {i}, striped = TRUE, rownames = FALSE, colnames = TRUE, digits = 5)
+                tagList(renderTable(expr = {split(values$corrected_data,
+                                                  f = values$corrected_data$Experiment)[[values$results_index]]},
+                        striped = TRUE, rownames = FALSE, colnames = TRUE, digits = 5))
+                    #[[,values$results_index]]
+                    #}))
+            })
         })
     })
 
